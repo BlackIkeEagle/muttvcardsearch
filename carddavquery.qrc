@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>cardsearch.xml</file>
+    </qresource>
+</RCC>
