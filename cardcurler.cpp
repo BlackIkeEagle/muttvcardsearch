@@ -81,8 +81,31 @@ QList<Person> CardCurler::curlCard(const QString &url, const QString &username, 
                                             QStringList values = vcProperty.values();
                                             if (!values.isEmpty())
                                             {
-                                                p.FirstName = values.at(vCardProperty::Firstname);
-                                                p.LastName  = values.at(vCardProperty::Lastname);
+                                                QString fName = values.at(vCardProperty::Firstname);
+                                                QString lName = values.at(vCardProperty::Lastname);
+                                                if(!fName.isNull() && !fName.isEmpty() && lName.isNull() && !lName.isEmpty()) {
+                                                    p.FirstName = fName;
+                                                    p.LastName = lName;
+                                                }
+                                            }
+                                        } else if(vcProperty.name() == VC_FORMATTED_NAME) {
+                                            // not nice but there are entries in my carddav server
+                                            // who dont have a N (i.e. VC_NAME property containing firstname and lastname separately)
+                                            // but instead have only the formatted name property. So i will split this string
+                                            // on each whitespace and combine it somewhat friendly... But what about a title?
+                                            if(p.FirstName.isEmpty() || p.LastName.isEmpty()) {
+                                                QString formattedName = vcProperty.values().at(0);
+                                                if(formattedName.isNull() || formattedName.isEmpty()) {
+                                                    cerr << "There is no vcard property at index 0. Therefore I cant read the value of formatted name (FN)." << endl;
+                                                } else {
+                                                    QStringList tokens = formattedName.split(QRegExp("\\s"));
+                                                    if(!tokens.isEmpty() && tokens.size() == 2) {
+                                                        p.FirstName = tokens.at(0);
+                                                        p.LastName = tokens.at(1);
+                                                    } else {
+                                                        cerr << "VCard property 'FN' contains invalid value(s): more then 2 tokens or none at all!: " << formattedName.toStdString() << endl;
+                                                    }
+                                                }
                                             }
                                         }
                                     }
