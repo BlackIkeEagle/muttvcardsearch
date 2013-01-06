@@ -73,17 +73,18 @@ QList<Person> CardCurler::curlCard(const QString &url, const QString &username, 
                                 foreach(vCard c, vcards) {
                                     Person p;
 
-                                    vCardProperty name_prop = c.property(VC_NAME);
-                                    QStringList values = name_prop.values();
-                                    if (!values.isEmpty())
-                                    {
-                                        p.FirstName = values.at(vCardProperty::Firstname);
-                                        p.LastName  = values.at(vCardProperty::Lastname);
-                                    }
-
-                                    vCardProperty mail_prop = c.property(VC_EMAIL);
-                                    if(mail_prop.isValid()) {
-                                       p.Emails.append(mail_prop.values());
+                                    vCardPropertyList vcPropertyList = c.properties();
+                                    foreach(vCardProperty vcProperty, vcPropertyList) {
+                                        if(vcProperty.name() == VC_EMAIL) {
+                                            p.Emails.append(vcProperty.values());
+                                        } else if(vcProperty.name() == VC_NAME) {
+                                            QStringList values = vcProperty.values();
+                                            if (!values.isEmpty())
+                                            {
+                                                p.FirstName = values.at(vCardProperty::Firstname);
+                                                p.LastName  = values.at(vCardProperty::Lastname);
+                                            }
+                                        }
                                     }
 
                                     persons.append(p);
