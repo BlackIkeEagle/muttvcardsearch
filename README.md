@@ -6,6 +6,7 @@ A small mutt carddav search utility for an Owncloud server using QT, pugixml and
 INSTALL
 ------------
 first, install
+* libcurl (installed by default on many linux distributions)
 * libvcard
 * pugixml
 * QT (requiered by libvcard)
