@@ -5,6 +5,7 @@
 #include "option.h"
 #include "cardcurler.h"
 #include "settings.h"
+#include "constants.h"
 
 void printError(QString detail) {
     cout << detail.toStdString() << endl;
@@ -78,16 +79,42 @@ int main(int argc, char *argv[])
     QString _arg = QString::fromLatin1(argv[1]);
     CardCurler cc(_arg);
 
-    // TODO: use the local chache first!
-    if(false == _export) {
-        QList<Person> persons = cc.curlCard(
-                    cfg.getProperty("server"),
-                    cfg.getProperty("username"),
-                    cfg.getProperty("password"),
-                    QString(query.arg(_arg).arg(_arg))
-        );
+    // there is the cache ;)
+    QString cachefile = QDir::homePath() + CACHEPATH;
 
-        if(persons.size() > 0) {
+    if(false == _export) {
+        query = query.arg(_arg).arg(_arg);
+    } else {
+        if(QFile::exists(cachefile)) {
+            if(QFile::remove(cachefile)) {
+                cout << "Old cache deleted" << endl;
+            }
+        }
+    }
+
+    QList<Person> persons;
+
+    // only ask the cache if
+    // 1) no export was requested
+    // 2) the cachefile exists
+    if(!_export && QFile::exists(cachefile)) {
+        persons = cc.curlCardCache(QString::fromUtf8(argv[1]));
+    }
+
+    // if we (still) found no persons, ask the server
+    if(persons.size() == 0) {
+        if(_export) cc.setExport();
+
+        persons = cc.curlCard(
+            cfg.getProperty("server"),
+            cfg.getProperty("username"),
+            cfg.getProperty("password"),
+            QString(query)
+        );
+    }
+
+    if(persons.size() > 0) {
+        if(false == _export) {
             cout << endl; // needed by mutt
             foreach(Person person, persons) {
                 foreach(QString email, person.Emails) {
@@ -96,6 +123,20 @@ int main(int argc, char *argv[])
                     // I tested toUtf8().data() successfully with KDE's konsole and a simple xterm and thus it fits my needs
                     cout << email.toUtf8().data() << "\t" << person.FirstName.toUtf8().data() << " " << person.LastName.toUtf8().data() << endl;
                 }
+            }
+        } else {
+            QString cachefile = QDir::homePath() + CACHEPATH;
+            QFile file(cachefile);
+            if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                foreach(Person person, persons) {
+                    //cout << person.rawCardData.toStdString() << endl;
+                    file.write(person.rawCardData.toStdString().c_str());
+                    file.write("\n");
+                }
+                file.close();
+                cout << "Cache created" << endl;
+            } else {
+                cout << "Failed to create locale cache in " << cachefile.toStdString() << endl;
             }
         }
     }

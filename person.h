@@ -11,6 +11,9 @@ public:
     QString FirstName;
     QString LastName;
     QStringList Emails;
+    QString rawCardData;
+
+    bool isValid();
 };
 
 #endif // PERSON_H

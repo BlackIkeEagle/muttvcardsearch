@@ -4,8 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core
-
+QT       += core xml xmlpatterns
 QT       -= gui
 
 TARGET = qvcardsearch
@@ -28,7 +27,8 @@ HEADERS += \
     cardcurler.h \
     person.h \
     settings.h \
-    option.h
+    option.h \
+    constants.h
 
 RESOURCES += \
     carddavquery.qrc
