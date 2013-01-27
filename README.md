@@ -33,4 +33,5 @@ put the results back tu Mutt. But it works for me.
 
 PS:
 ------------
-should compile and work on allmost all *NIX versions/distributions where QT is supported and maybe Win32 too!?
+should compile and work on allmost all *NIX versions/distributions where QT is supported and maybe Win32 too,
+because there is QT natively available as well as libcurl.
