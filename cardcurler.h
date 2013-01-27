@@ -20,7 +20,7 @@ using namespace std;
 class CardCurler
 {
 public:
-    CardCurler();
+    CardCurler(const QString &rawQuery);
     QList<Person> curlCard(const QString &url, const QString &username, const QString &password, const QString &query);
 
 private:
@@ -30,12 +30,18 @@ private:
       size_t len;
     };
 
+    struct report_data {
+        char *data;
+        size_t len;
+    };
+
     CURL *curl;
     CURLcode res;
+    QString _rawQuery;
 
     void init_vcard(struct vcdata *vc);
     static size_t writefunc(void *ptr, size_t size, size_t nmemb, struct vcdata *vc);
-
+    static size_t readfunc(void *ptr, size_t size, size_t nmemb, struct report_data *userdata);
 };
 
 #endif // CARDCURLER_H

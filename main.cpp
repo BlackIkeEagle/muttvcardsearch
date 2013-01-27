@@ -7,19 +7,16 @@
 #include "settings.h"
 
 void printError(QString detail) {
-    cout << "--------------------------------------------------------------------------------" << endl;
-    cout << "                           *** qvCardSearch ***" << endl;
-    cout << "--------------------------------------------------------------------------------" << endl;
-    cout << endl;
     cout << detail.toStdString() << endl;
-    cout << "Usage:" << endl;
+    cout << "qvCardSearch usage:" << endl;
     cout << endl;
-    cout << "to    SEARCH type> qvcardsearch <search-term>" << endl;
-    cout << "where <search-term> is part of the fullname or email to search" << endl << endl;
-    cout << "to CONFIGURE type> qvcardsearch --server=OWNCLOUD-CARDDAV-URL \\" << endl;
-    cout << "                         --username=USERNAME \\" << endl;
-    cout << "                         --password=PASSWORD \\" << endl;
-    cout << "                         --tmpfile=/tmp/qvcardsearch.tmp" << endl;
+    cout << "SEARCHING:" << endl;
+    cout << "qvcardsearch <query>" << endl;
+    cout << "where <query> is part of the fullname or email to search" << endl << endl;
+    cout << "CONFIGURE:" << endl;
+    cout << "qvcardsearch --server=OWNCLOUD-CARDDAV-URL \\" << endl;
+    cout << "             --username=USERNAME \\" << endl;
+    cout << "             --password=PASSWORD \\" << endl;
     cout << endl;
 }
 
@@ -29,7 +26,7 @@ int main(int argc, char *argv[])
     Settings cfg;
     Option opt;
 
-    if(argc == 5) {
+    if(argc == 4) {
         QString tmp;
 
         tmp = opt.getOption(argc, argv, "--server");
@@ -56,14 +53,6 @@ int main(int argc, char *argv[])
             return 1;
         }
 
-        tmp = opt.getOption(argc, argv, "--tmpfile");
-        if(!tmp.isNull() && !tmp.isEmpty()) {
-            cfg.setProperty("tmpfile", tmp);
-        } else {
-            printError("property --tmpfile=xxx missing");
-            return 1;
-        }
-
         return 0;
     } else if ( argc != 2) {
         printError("invalid arguments");
@@ -81,32 +70,21 @@ int main(int argc, char *argv[])
     // open the search template file from the executable resource
     QFile input(searchTemplate);
     input.open(QIODevice::ReadOnly);
-    QString fileContent(input.readAll());
+    QString query(input.readAll());
     input.close();
-
-    // write the search template: this is of course bullshit! It would be better
-    // to have the string in memory but I have not fully understand how
-    // libcurl reads from a string... so, I create a temporary file.
-    QString queryFile(cfg.getProperty("tmpfile"));
-    QFile output(queryFile);
-    output.open(QIODevice::WriteOnly);
-    if(false == _export) {
-        output.write((fileContent.arg(QString(argv[1])).arg(QString(argv[1]))).toStdString().c_str());
-    } else {
-        output.write(fileContent.toStdString().c_str());
-    }
-    output.close();
 
     // The worker. will read from your owncloud server as well as from your local cache.
     // In the future, it will most probably also write to your owncloud.
-    CardCurler cc;
+    QString _arg = QString::fromLatin1(argv[1]);
+    CardCurler cc(_arg);
 
     // TODO: use the local chache first!
     if(false == _export) {
-        QList<Person> persons = cc.curlCard(cfg.getProperty("server"),
+        QList<Person> persons = cc.curlCard(
+                    cfg.getProperty("server"),
                     cfg.getProperty("username"),
                     cfg.getProperty("password"),
-                    QString(queryFile)
+                    QString(query.arg(_arg).arg(_arg))
         );
 
         if(persons.size() > 0) {
@@ -122,6 +100,5 @@ int main(int argc, char *argv[])
         }
     }
 
-    QFile::remove(queryFile);
     return 0;
 }
