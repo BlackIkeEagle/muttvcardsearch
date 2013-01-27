@@ -13,11 +13,8 @@ using namespace std;
 
 #include <QString>
 #include <QStringList>
-#include <QtXmlPatterns/QXmlQuery>
-#include <QXmlResultItems>
-#include <QtXmlPatterns/QtXmlPatterns>
-#include <pugixml.hpp>
-#include <pugiconfig.hpp>
+#include <QTextStream>
+#include <QDir>
 #include <vcard/vcard.h>
 #include "person.h"
 

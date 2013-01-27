@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core xml xmlpatterns
+QT       += core
 QT       -= gui
 
 TARGET = qvcardsearch
@@ -21,7 +21,7 @@ SOURCES += main.cpp \
     settings.cpp \
     option.cpp
 
-LIBS += -lcurl -lpugixml -lvcard
+LIBS += -lcurl -lvcard
 
 HEADERS += \
     cardcurler.h \
