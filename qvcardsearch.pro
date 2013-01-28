@@ -7,7 +7,7 @@
 QT       += core
 QT       -= gui
 
-TARGET = qvcardsearch
+TARGET = muttvcardsearch
 CONFIG   += console
 CONFIG   -= app_bundle
 
@@ -28,7 +28,7 @@ HEADERS += \
     person.h \
     settings.h \
     option.h \
-    constants.h
+    version.h
 
 RESOURCES += \
     carddavquery.qrc

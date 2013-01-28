@@ -1,23 +1,45 @@
-#include <QDebug>
 #include <QFile>
-
+#include <sys/stat.h>
 #include <vcard/vcard.h>
 #include "option.h"
 #include "cardcurler.h"
 #include "settings.h"
-#include "constants.h"
+#include "version.h"
 
 void printError(QString detail) {
-    cout << detail.toStdString() << endl;
-    cout << "qvCardSearch usage:" << endl;
-    cout << endl;
-    cout << "SEARCHING:" << endl;
-    cout << "qvcardsearch <query>" << endl;
-    cout << "where <query> is part of the fullname or email to search" << endl << endl;
-    cout << "CONFIGURE:" << endl;
-    cout << "qvcardsearch --server=OWNCLOUD-CARDDAV-URL \\" << endl;
-    cout << "             --username=USERNAME \\" << endl;
-    cout << "             --password=PASSWORD \\" << endl;
+    cout << detail.toStdString() << endl << endl;
+
+    cout << "###############################" << endl;
+    cout << "   **** " << APPNAME << " ****" << endl;
+    cout << "###############################" << endl;
+    cout << "          Version " << MAJOR << "." << MINOR << endl;
+    cout << "*******************************" << endl << endl;
+
+    cout << ":::::::: ABOUT ::::" << endl;
+    cout << APPNAME << " is a small adressbook utility for the mutt mailclient to read your contacts" << endl;
+    cout << "from an owncloud carddav list. (C) Torsten Flammiger, 2013, Licensed under GPLv2." << endl;
+    cout << "See https://github.com/tfl/qvcardsearch for updates and source." << endl << endl;
+
+    cout << ":::: CONFIGURE ::::" << endl;
+    cout << "$ " << APPNAME << "  --server=OWNCLOUD-CARDDAV-URL \\" << endl;
+    cout << "                   --username=USERNAME \\" << endl;
+    cout << "                   --password=PASSWORD \\" << endl << endl;
+
+    cout << ":::::::: CACHE ::::" << endl;
+    cout << "$ " << APPNAME << " --create-local-cache" << endl;
+    cout << APPNAME << " will then create a local cache of all your vcards and will return data from" << endl;
+    cout << "the cache first. If no data was found '" << APPNAME << "' will then query the server." << endl << endl;
+
+    cout << "::::::: SEARCH ::::" << endl;
+    cout << "$ " << APPNAME << " <query>" << endl;
+    cout << "where <query> is part of the fullname or email to search. Dont use wildcards like *" << endl << endl;
+
+    cout << "NOTE: enclose the parameter values in single or double quotes only if they contain whitespace" << endl;
+    cout << "NOTE: a valid Owncloud 4.5 carddav resource url looks something like this:" << endl;
+    cout << "      http(s)://<YOUR SERVER.COM>/remote.php/carddav/addressbooks/<USERNAME>/<NAME OF YOUR LIST>" << endl;
+    cout << "NOTE: the configuration is stored under ~/.config/" << APPNAME << endl;
+    cout << "NOTE: your password will not be encrypted! Therefore a chmod go-rwx on ~/.config/" << APPNAME << endl;
+    cout << "      will be executed everytime you configure the application" << endl;
     cout << endl;
 }
 
@@ -32,6 +54,7 @@ int main(int argc, char *argv[])
 
         tmp = opt.getOption(argc, argv, "--server");
         if(!tmp.isNull() && !tmp.isEmpty()) {
+            opt.trimQuotes(&tmp);
             cfg.setProperty("server", tmp);
         } else {
             printError("property --server=xxx missing");
@@ -40,6 +63,7 @@ int main(int argc, char *argv[])
 
         tmp = opt.getOption(argc, argv, "--username");
         if(!tmp.isNull() && !tmp.isEmpty()) {
+            opt.trimQuotes(&tmp);
             cfg.setProperty("username", tmp);
         } else {
             printError("property --username=xxx missing");
@@ -48,15 +72,21 @@ int main(int argc, char *argv[])
 
         tmp = opt.getOption(argc, argv, "--password");
         if(!tmp.isNull() && !tmp.isEmpty()) {
+            opt.trimQuotes(&tmp);
             cfg.setProperty("password", tmp);
         } else {
             printError("property --password=xxx missing");
             return 1;
         }
 
+        // chmod go-a to the config file
+        cfg.sync();
+        chmod(cfg.getConfigDir(), S_IRUSR | S_IWUSR | S_IXUSR);
+        chmod(cfg.getConfigFile(), S_IRUSR | S_IWUSR);
+
         return 0;
     } else if ( argc != 2) {
-        printError("invalid arguments");
+        printError("invalid or missing arguments");
         return 1;
     }
 
@@ -80,7 +110,7 @@ int main(int argc, char *argv[])
     CardCurler cc(_arg);
 
     // there is the cache ;)
-    QString cachefile = QDir::homePath() + CACHEPATH;
+    QString cachefile = cfg.getCacheFile();
 
     if(false == _export) {
         query = query.arg(_arg).arg(_arg);
@@ -125,7 +155,6 @@ int main(int argc, char *argv[])
                 }
             }
         } else {
-            QString cachefile = QDir::homePath() + CACHEPATH;
             QFile file(cachefile);
             if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
                 foreach(Person person, persons) {
@@ -139,6 +168,8 @@ int main(int argc, char *argv[])
                 cout << "Failed to create locale cache in " << cachefile.toStdString() << endl;
             }
         }
+    } else {
+        cout << "Nothing found at all" << endl;
     }
 
     return 0;

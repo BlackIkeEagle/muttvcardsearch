@@ -17,6 +17,7 @@ using namespace std;
 #include <QDir>
 #include <vcard/vcard.h>
 #include "person.h"
+#include "settings.h"
 
 class CardCurler
 {

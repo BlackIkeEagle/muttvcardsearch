@@ -1,5 +1,4 @@
 #include "cardcurler.h"
-#include "constants.h"
 
 CardCurler::CardCurler(const QString &rawQuery)
 {
@@ -75,7 +74,8 @@ bool CardCurler::listContainsQuery(const QStringList *list, const QString &query
 
 QList<Person> CardCurler::curlCardCache(const QString &query) {
     QList<Person> persons;
-    QString cachefile = QDir::homePath() + CACHEPATH;
+    Settings cfg;
+    QString cachefile = cfg.getCacheFile();
 
     if(QFile::exists(cachefile)) {
         QString line, vcard;
@@ -166,6 +166,10 @@ QList<Person> CardCurler::curlCard(const QString &url, const QString &username, 
 
         res = curl_easy_perform(curl);
         if(res == CURLE_OK) {
+
+//
+//      for some reason this does not work at all, allthough the query is valid and evaluates properly; so I dropped it ;)
+//
 //            QString x_namespaced_query;
 //            x_namespaced_query.append("declare namespace d=\"DAV\";\n");
 //            x_namespaced_query.append("declare namespace card=\"urn:ietf:params:xml:ns:carddav\";\n");

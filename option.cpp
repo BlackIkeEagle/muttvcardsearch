@@ -28,3 +28,18 @@ QString Option::getOption(int argc, char **argv, const QString &option) {
     return QString();
 }
 
+void Option::trimChar(QString *s, const QChar &c) {
+    if(s->startsWith(c)) {
+        *s = s->mid(1);
+    }
+
+    if(s->endsWith(c)) {
+        *s = s->mid(0, s->length() - 1);
+    }
+}
+
+void Option::trimQuotes(QString *s) {
+    trimChar(s, '\'');
+    trimChar(s, '"');
+}
+
