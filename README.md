@@ -1,4 +1,4 @@
-qvcardsearch
+muttvcardsearch
 ============
 
 A small mutt carddav search utility for your Owncloud server using QT and libvard
@@ -13,10 +13,10 @@ first, install
 then
 
 1. clone the repository
-2. cd into qvcardsearch
+2. cd into muttvcardsearch
 3. execute qmake; make; sudo make install
 
-Call qvcardsearch without arguments so see how to configure it.
+Call muttvcardsearch without arguments so see how to configure it.
 After that set your query command in your .muttrc
 * `set query_command = "muttvcardsearch '%s'"`
 
@@ -24,12 +24,6 @@ If you like to have your data cached locally use *--create-local-cache* as the f
 This will download all your contacts into ~/.config/muttvcardsearch/cache.dat which is
 a simple textfile containing your vcards. A new search should then search the local cache first
 and if your query does not return any data it will search the server.
-
-NOTICE
-------------
-
-this is a **very basic and ugly try** to show how to search a carddav server using C++ and
-put the results back tu Mutt. But it works for me.
 
 PS:
 ------------
