@@ -18,10 +18,10 @@ then
 
 Call qvcardsearch without arguments so see how to configure it.
 After that set your query command in your .muttrc
-* `set query_command = "qvcardsearch '%s'"`
+* `set query_command = "muttvcardsearch '%s'"`
 
 If you like to have your data cached locally use *--create-local-cache* as the first and only option.
-This will download all your contacts into ~/.config/qvcardsearch/cache.dat which is
+This will download all your contacts into ~/.config/muttvcardsearch/cache.dat which is
 a simple textfile containing your vcards. A new search should then search the local cache first
 and if your query does not return any data it will search the server.
 
