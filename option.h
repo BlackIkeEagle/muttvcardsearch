@@ -3,6 +3,7 @@
 
 #include <QString>
 #include <QStringList>
+#include <stdlib.h>
 
 class Option
 {
@@ -12,6 +13,8 @@ public:
     bool hasOption(int argc, char **argv, const QString &option);
     void trimQuotes(QString *s);
     void trimChar(QString *s, const QChar &c);
+
+    static bool isVerbose();
 };
 
 #endif // OPTION_H

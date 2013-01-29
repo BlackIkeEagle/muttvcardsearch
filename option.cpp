@@ -4,6 +4,14 @@ Option::Option()
 {
 }
 
+bool Option::isVerbose() {
+    char* env = getenv("SEARCH_VERBOSE");
+
+    if(! env) return false;
+    if( strlen(env) == 1 && env[0] == '1') return true;
+    return false;
+}
+
 bool Option::hasOption(int argc, char **argv, const QString &option) {
     for(int i=1; i<argc; i++) {
         QString argument(argv[i]);

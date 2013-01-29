@@ -1,4 +1,5 @@
 #include "cardcurler.h"
+#include "option.h"
 #include <algorithm>
 
 
@@ -99,6 +100,12 @@ QList<Person> CardCurler::curlCardCache(const QString &query) {
                 if(line == "END:VCARD") {
                     QByteArray utf8card;
                     utf8card.append(vcard.toUtf8());
+
+                    if(Option::isVerbose()) {
+                        cout << "FROM CACHE:" << endl;
+                        cout << vcard.toStdString() << endl;
+                    }
+
                     QList<vCard> vcards = vCard::fromByteArray(utf8card);
                     vcard = ""; // reset!
 
@@ -163,7 +170,13 @@ QList<Person> CardCurler::curlCard(const QString &url, const QString &username, 
         curl_easy_setopt(curl, CURLOPT_READDATA, &pdata);
         curl_easy_setopt(curl, CURLOPT_READFUNCTION, &CardCurler::readfunc);
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
-        curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
+
+        if(Option::isVerbose()) {
+            curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
+        } else {
+            curl_easy_setopt(curl, CURLOPT_UPLOAD, 0L);
+        }
+
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &CardCurler::writefunc);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, vc);
 
@@ -184,7 +197,11 @@ QList<Person> CardCurler::curlCard(const QString &url, const QString &username, 
             QStringList list = http_result.split(vcardAddressBeginToken);
             if(list.size() > 0) {
                 for(int i=1; i<list.size(); i++) {
-                    //cout << list.at(i).toStdString() << endl;
+
+                    if(Option::isVerbose()) {
+                        cout << list.at(i).toStdString() << endl;
+                    }
+
                     QStringList _list = list.at(i).split(vcardAddressEndToken);
                     // _list contains 2 elements where the first element is a single vcard
                     if(_list.size() == 2) {
