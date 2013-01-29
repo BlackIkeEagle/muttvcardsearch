@@ -1,4 +1,6 @@
 #include "cardcurler.h"
+#include <algorithm>
+
 
 CardCurler::CardCurler(const QString &rawQuery)
 {
@@ -130,13 +132,13 @@ QList<Person> CardCurler::curlCard(const QString &url, const QString &username, 
     init_vcard(vc);
 
     // prepare the data structure from which curl reads the query to send to the peer
-    vcdata *rd = new vcdata();
     QByteArray _ba = query.toAscii();
     char *data = _ba.data();
-    int len = sizeof(data);
-    len = len * query.length();
-    rd->ptr = data;
-    rd->len = len;
+
+    postdata pdata;
+    pdata.body_pos = 0;
+    pdata.body_size = strlen(data);
+    pdata.data = data;
 
     CURL *curl;
     CURLcode res;
@@ -157,7 +159,8 @@ QList<Person> CardCurler::curlCard(const QString &url, const QString &username, 
         curl_easy_setopt(curl, CURLOPT_USERPWD, (QString("%1:%2").arg(username).arg(password)).toStdString().c_str());
         curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "REPORT");
 
-        curl_easy_setopt(curl, CURLOPT_READDATA, rd);
+        curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)pdata.body_size);
+        curl_easy_setopt(curl, CURLOPT_READDATA, &pdata);
         curl_easy_setopt(curl, CURLOPT_READFUNCTION, &CardCurler::readfunc);
         curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
         curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
@@ -167,38 +170,29 @@ QList<Person> CardCurler::curlCard(const QString &url, const QString &username, 
         res = curl_easy_perform(curl);
         if(res == CURLE_OK) {
 
-//
-//      for some reason this does not work at all, allthough the query is valid and evaluates properly; so I dropped it ;)
-//
-//            QString x_namespaced_query;
-//            x_namespaced_query.append("declare namespace d=\"DAV\";\n");
-//            x_namespaced_query.append("declare namespace card=\"urn:ietf:params:xml:ns:carddav\";\n");
-//            x_namespaced_query.append("/d:multistatus/d:response/d:propstat/d:prop/card:address-data/string()");
-
-//            QXmlQuery xmlquery;
-//            QStringList xmlstringlist;
-//            QString httpresult = QString::fromUtf8(vc->ptr);
-//            xmlquery.setFocus(httpresult);
-//            cout << vc->ptr << endl;
-//            xmlquery.setQuery(x_namespaced_query);
-
-//            if ( xmlquery.isValid() ) {
-//               if( xmlquery.evaluateTo(&xmlstringlist) ) {
-//                   cout << xmlstringlist.size() << endl;
-//               }
-//            }
-
             QString http_result = QString::fromLatin1(vc->ptr);
-            QStringList list = http_result.split("<card:address-data>");
+
+            QString vcardAddressBeginToken = "<card:address-data>"; // defaults to Owncloud
+            QString vcardAddressEndToken = "</card:address-data>";
+
+            if(http_result.contains("<C:address-data>")) {
+                vcardAddressBeginToken = "<C:address-data>";
+                vcardAddressEndToken   = "</C:address-data>";
+            }
+
+
+            QStringList list = http_result.split(vcardAddressBeginToken);
             if(list.size() > 0) {
                 for(int i=1; i<list.size(); i++) {
-                    QStringList _list = list.at(i).split("</card:address-data>");
+                    //cout << list.at(i).toStdString() << endl;
+                    QStringList _list = list.at(i).split(vcardAddressEndToken);
                     // _list contains 2 elements where the first element is a single vcard
                     if(_list.size() == 2) {
-                        QString s = _list.at(0);
-                        s = s.replace("&#13;", "");
 
+                        QString s = _list.at(0);
+                        fixHtml(&s);
                         QList<vCard> vcards = vCard::fromByteArray(s.toStdString().c_str());
+
                         if(!vcards.isEmpty()) {
                             foreach(vCard c, vcards) {
                                 // there is only one vcard in the list - every time ;)
@@ -227,6 +221,111 @@ QList<Person> CardCurler::curlCard(const QString &url, const QString &username, 
     return persons;
 }
 
+// what a great funtion! thanks SOGo
+void CardCurler::fixHtml(QString *data) {
+    *data = data->replace("&#13;", "");
+    *data = data->replace("&#34;", "\"");
+    *data = data->replace("&#38;", "&");
+    *data = data->replace("&#60;", "<");
+    *data = data->replace("&#62;", ">");
+    *data = data->replace("&#160;", " ");
+    *data = data->replace("&#161;", "¡");
+    *data = data->replace("&#162;", "¢");
+    *data = data->replace("&#163;", "£");
+    *data = data->replace("&#164;", "¤");
+    *data = data->replace("&#165;", "¥");
+    *data = data->replace("&#166;", "¦");
+    *data = data->replace("&#167;", "§");
+    *data = data->replace("&#168;", "¨");
+    *data = data->replace("&#169;", "©");
+    *data = data->replace("&#170;", "ª");
+    *data = data->replace("&#171;", "«");
+    *data = data->replace("&#172;", "¬");
+    *data = data->replace("&#173;", "");
+    *data = data->replace("&#174;", "®");
+    *data = data->replace("&#175;", "¯");
+    *data = data->replace("&#176;", "°");
+    *data = data->replace("&#177;", "±");
+    *data = data->replace("&#178;", "²");
+    *data = data->replace("&#179;", "³");
+    *data = data->replace("&#180;", "´");
+    *data = data->replace("&#181;", "µ");
+    *data = data->replace("&#182;", "¶");
+    *data = data->replace("&#183;", "·");
+    *data = data->replace("&#184;", "¸");
+    *data = data->replace("&#185;", "¹");
+    *data = data->replace("&#186;", "º");
+    *data = data->replace("&#187;", "»");
+    *data = data->replace("&#188;", "¼");
+    *data = data->replace("&#189;", "½");
+    *data = data->replace("&#190;", "¾");
+    *data = data->replace("&#191;", "¿");
+    *data = data->replace("&#192;", "À");
+    *data = data->replace("&#193;", "Á");
+    *data = data->replace("&#194;", "Â");
+    *data = data->replace("&#195;", "Ã");
+    *data = data->replace("&#196;", "Ä");
+    *data = data->replace("&#197;", "Å");
+    *data = data->replace("&#198;", "Æ");
+    *data = data->replace("&#199;", "Ç");
+    *data = data->replace("&#200;", "È");
+    *data = data->replace("&#201;", "É");
+    *data = data->replace("&#202;", "Ê");
+    *data = data->replace("&#203;", "Ë");
+    *data = data->replace("&#204;", "Ì");
+    *data = data->replace("&#205;", "Í");
+    *data = data->replace("&#206;", "Î");
+    *data = data->replace("&#207;", "Ï");
+    *data = data->replace("&#208;", "Ð");
+    *data = data->replace("&#209;", "Ñ");
+    *data = data->replace("&#210;", "Ò");
+    *data = data->replace("&#211;", "Ó");
+    *data = data->replace("&#212;", "Ô");
+    *data = data->replace("&#213;", "Õ");
+    *data = data->replace("&#214;", "Ö");
+    *data = data->replace("&#215;", "×");
+    *data = data->replace("&#216;", "Ø");
+    *data = data->replace("&#217;", "Ù");
+    *data = data->replace("&#218;", "Ú");
+    *data = data->replace("&#219;", "Û");
+    *data = data->replace("&#220;", "Ü");
+    *data = data->replace("&#221;", "Ý");
+    *data = data->replace("&#222;", "Þ");
+    *data = data->replace("&#223;", "ß");
+    *data = data->replace("&#224;", "à");
+    *data = data->replace("&#225;", "á");
+    *data = data->replace("&#226;", "â");
+    *data = data->replace("&#227;", "ã");
+    *data = data->replace("&#228;", "ä");
+    *data = data->replace("&#229;", "å");
+    *data = data->replace("&#230;", "æ");
+    *data = data->replace("&#231;", "ç");
+    *data = data->replace("&#232;", "è");
+    *data = data->replace("&#233;", "é");
+    *data = data->replace("&#234;", "ê");
+    *data = data->replace("&#235;", "ë");
+    *data = data->replace("&#236;", "ì");
+    *data = data->replace("&#237;", "í");
+    *data = data->replace("&#238;", "î");
+    *data = data->replace("&#239;", "ï");
+    *data = data->replace("&#240;", "ð");
+    *data = data->replace("&#241;", "ñ");
+    *data = data->replace("&#242;", "ò");
+    *data = data->replace("&#243;", "ó");
+    *data = data->replace("&#244;", "ô");
+    *data = data->replace("&#245;", "õ");
+    *data = data->replace("&#246;", "ö");
+    *data = data->replace("&#247;", "÷");
+    *data = data->replace("&#248;", "ø");
+    *data = data->replace("&#249;", "ù");
+    *data = data->replace("&#250;", "ú");
+    *data = data->replace("&#251;", "û");
+    *data = data->replace("&#252;", "ü");
+    *data = data->replace("&#253;", "ý");
+    *data = data->replace("&#254;", "þ");
+    *data = data->replace("&#255;", "ÿ");
+}
+
 void CardCurler::init_vcard(vcdata *vc) {
     vc->len = 0;
     vc->ptr = (char*)malloc(vc->len+1);
@@ -253,11 +352,22 @@ size_t CardCurler::writefunc(void *ptr, size_t size, size_t nmemb, vcdata *vc) {
     return size * nmemb;
 }
 
-size_t CardCurler::readfunc(void *ptr, size_t size, size_t nmemb, report_data *userdata) {
-    size_t curl_size = nmemb * size;
-    size_t to_copy = (userdata->len < curl_size) ? userdata->len : curl_size;
-    memcpy(ptr, userdata->data, to_copy);
-    userdata->len -= to_copy;
-    userdata->data += to_copy;
-    return to_copy;
+size_t CardCurler::readfunc(void *ptr, size_t size, size_t nmemb, void *stream)
+{
+    if (stream)
+    {
+        postdata *ud = (postdata*) stream;
+        int curlSize = size * nmemb;
+        int available = (ud->body_size - ud->body_pos);
+
+        if (available > 0)
+        {
+            int written = std::min( curlSize, available );
+            memcpy(ptr, ((char*)(ud->data)) + ud->body_pos, written);
+            ud->body_pos += written;
+            return written;
+        }
+    }
+
+    return 0;
 }

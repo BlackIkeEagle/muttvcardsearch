@@ -34,10 +34,12 @@ private:
       size_t len;
     };
 
-    struct report_data {
-        char *data;
-        size_t len;
-    };
+    typedef struct
+    {
+        void *data;
+        int body_size;
+        int body_pos;
+    } postdata;
 
     CURL *curl;
     CURLcode res;
@@ -45,11 +47,12 @@ private:
     QString _rawQuery;
     bool _export;
 
+    void fixHtml(QString* data);
     void init_vcard(struct vcdata *vc);
     void createPerson(const vCard *vcdata, Person *p);
     bool listContainsQuery(const QStringList *list, const QString &query);
     static size_t writefunc(void *ptr, size_t size, size_t nmemb, struct vcdata *vc);
-    static size_t readfunc(void *ptr, size_t size, size_t nmemb, struct report_data *userdata);
+    static size_t readfunc(void *ptr, size_t size, size_t nmemb, void *stream);
 };
 
 #endif // CARDCURLER_H
