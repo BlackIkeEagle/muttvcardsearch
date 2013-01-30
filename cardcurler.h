@@ -22,18 +22,21 @@ using namespace std;
 class CardCurler
 {
 public:
-    CardCurler(const QString &rawQuery);
-    QList<Person> curlCard(const QString &url, const QString &username, const QString &password, const QString &query);
-    QList<Person> curlCardCache(const QString &query); // query should be the raw query string as we dont query the server
+    CardCurler(const QString &username, const QString &password, const QString &url, const QString &rawQuery);
+    QList<Person> curlCard(const QString &query);
+    QList<Person> curlCache(const QString &query); // query should be the raw query string as we dont query the server
+    QList<Person> getAllCards();
     void setExport(bool b);
 
 private:
 
+    // write-data, result
     struct vcdata {
       char *ptr;
       size_t len;
     };
 
+    // read-data, query
     typedef struct
     {
         void *data;
@@ -44,9 +47,14 @@ private:
     CURL *curl;
     CURLcode res;
 
+    QString _url;
+    QString _username;
+    QString _password;
     QString _rawQuery;
     bool _export;
 
+    QString get(const QString& requestType, QString query);
+    QStringList getvCardURLs();
     void fixHtml(QString* data);
     void init_vcard(struct vcdata *vc);
     void createPerson(const vCard *vcdata, Person *p);

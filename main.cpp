@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
     // The worker. will read from your owncloud server as well as from your local cache.
     // In the future, it will most probably also write to your owncloud.
     QString _arg = QString::fromLatin1(argv[1]);
-    CardCurler cc(_arg);
+    CardCurler cc(cfg.getProperty("username"), cfg.getProperty("password"), cfg.getProperty("server"), _arg);
 
     // there is the cache ;)
     QString cachefile = cfg.getCacheFile();
@@ -128,19 +128,13 @@ int main(int argc, char *argv[])
     // 1) no export was requested
     // 2) the cachefile exists
     if(!doExport && QFile::exists(cachefile)) {
-        persons = cc.curlCardCache(QString::fromUtf8(argv[1]));
+        persons = cc.curlCache(QString::fromUtf8(argv[1]));
     }
 
     // if we (still) found no persons, ask the server
     if(persons.size() == 0) {
         cc.setExport(doExport);
-
-        persons = cc.curlCard(
-            cfg.getProperty("server"),
-            cfg.getProperty("username"),
-            cfg.getProperty("password"),
-            QString(query)
-        );
+        persons = cc.curlCard(QString(query));
     }
 
     if(persons.size() > 0) {

@@ -3,14 +3,30 @@
 #include <algorithm>
 
 
-CardCurler::CardCurler(const QString &rawQuery)
+CardCurler::CardCurler(const QString &username, const QString &password, const QString &url, const QString &rawQuery)
 {
+    _url      = url;
+    _username = username;
+    _password = password;
     _rawQuery = rawQuery;
-    _export = false;
+
+    // defaults to false
+    _export   = false;
 }
 
 void CardCurler::setExport(bool b) {
     _export = b;
+}
+
+QStringList CardCurler::getvCardURLs() {
+
+}
+
+QList<Person> CardCurler::getAllCards() {
+    QStringList cardUrls = getvCardURLs();
+    foreach(QString vcardURL, cardUrls) {
+        // download card data
+    }
 }
 
 void CardCurler::createPerson(const vCard *vcdata, Person *p) {
@@ -75,7 +91,71 @@ bool CardCurler::listContainsQuery(const QStringList *list, const QString &query
     return false;
 }
 
-QList<Person> CardCurler::curlCardCache(const QString &query) {
+// get server resource using libcurl
+QString CardCurler::get(const QString &requestType, QString query) {
+    QString result;
+
+    // init_card breaks if it failes
+    vcdata *vc = new vcdata();
+    init_vcard(vc);
+
+    // prepare the data structure from which curl reads the query to send to the peer
+    QByteArray _ba = query.toAscii();
+    char *data = _ba.data();
+
+    // read-data (the query)
+    postdata pdata;
+    pdata.body_pos = 0;
+    pdata.body_size = strlen(data);
+    pdata.data = data;
+
+    CURL *curl;
+    CURLcode res;
+
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+    curl = curl_easy_init();
+
+    if(curl) {
+        struct curl_slist *headers = NULL;
+        headers = curl_slist_append(headers, "Depth: 1");
+        headers = curl_slist_append(headers, "Content-Type: text/xml; charset=utf-8");
+
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+        curl_easy_setopt(curl, CURLOPT_URL, _url.toStdString().c_str());
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+        curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+        curl_easy_setopt(curl, CURLOPT_USERPWD, (QString("%1:%2").arg(_username).arg(_password)).toStdString().c_str());
+        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, requestType.toStdString().c_str());
+
+        curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)pdata.body_size);
+        curl_easy_setopt(curl, CURLOPT_READDATA, &pdata);
+        curl_easy_setopt(curl, CURLOPT_READFUNCTION, &CardCurler::readfunc);
+        curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &CardCurler::writefunc);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, vc);
+
+        if(Option::isVerbose()) {
+            curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+        } else {
+            curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
+        }
+
+        res = curl_easy_perform(curl);
+        if(res == CURLE_OK) {
+           result = QString::fromUtf8(vc->ptr);
+        }
+
+        curl_easy_cleanup(curl);
+    }
+
+    free (vc);
+    curl_global_cleanup();
+
+    return result;
+}
+
+QList<Person> CardCurler::curlCache(const QString &query) {
     QList<Person> persons;
     Settings cfg;
     QString cachefile = cfg.getCacheFile();
@@ -129,110 +209,57 @@ QList<Person> CardCurler::curlCardCache(const QString &query) {
     return persons;
 }
 
-QList<Person> CardCurler::curlCard(const QString &url, const QString &username, const QString &password, const QString &query) {
+// curl a card online
+QList<Person> CardCurler::curlCard(const QString &query) {
 
     // Result
     QList<Person> persons;
 
-    // init_card breaks if it failes
-    vcdata *vc = new vcdata();
-    init_vcard(vc);
+    QString http_result = get("REPORT", query);
 
-    // prepare the data structure from which curl reads the query to send to the peer
-    QByteArray _ba = query.toAscii();
-    char *data = _ba.data();
+    QString vcardAddressBeginToken = "<card:address-data>"; // defaults to Owncloud
+    QString vcardAddressEndToken = "</card:address-data>";
 
-    postdata pdata;
-    pdata.body_pos = 0;
-    pdata.body_size = strlen(data);
-    pdata.data = data;
+    if(http_result.contains("<C:address-data>")) {
+        vcardAddressBeginToken = "<C:address-data>";
+        vcardAddressEndToken   = "</C:address-data>";
+    }
 
-    CURL *curl;
-    CURLcode res;
 
-    curl_global_init(CURL_GLOBAL_DEFAULT);
-    curl = curl_easy_init();
+    QStringList list = http_result.split(vcardAddressBeginToken);
+    if(list.size() > 0) {
+        for(int i=1; i<list.size(); i++) {
 
-    if(curl) {
-        struct curl_slist *headers = NULL;
-        headers = curl_slist_append(headers, "Depth: 1");
-        headers = curl_slist_append(headers, "Content-Type: text/xml; charset=utf-8");
-
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-        curl_easy_setopt(curl, CURLOPT_URL, url.toStdString().c_str());
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-        curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-        curl_easy_setopt(curl, CURLOPT_USERPWD, (QString("%1:%2").arg(username).arg(password)).toStdString().c_str());
-        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "REPORT");
-
-        curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)pdata.body_size);
-        curl_easy_setopt(curl, CURLOPT_READDATA, &pdata);
-        curl_easy_setopt(curl, CURLOPT_READFUNCTION, &CardCurler::readfunc);
-        curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
-
-        if(Option::isVerbose()) {
-            curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
-        } else {
-            curl_easy_setopt(curl, CURLOPT_UPLOAD, 0L);
-        }
-
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &CardCurler::writefunc);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, vc);
-
-        res = curl_easy_perform(curl);
-        if(res == CURLE_OK) {
-
-            QString http_result = QString::fromLatin1(vc->ptr);
-
-            QString vcardAddressBeginToken = "<card:address-data>"; // defaults to Owncloud
-            QString vcardAddressEndToken = "</card:address-data>";
-
-            if(http_result.contains("<C:address-data>")) {
-                vcardAddressBeginToken = "<C:address-data>";
-                vcardAddressEndToken   = "</C:address-data>";
+            if(Option::isVerbose()) {
+                cout << list.at(i).toStdString() << endl;
             }
 
+            QStringList _list = list.at(i).split(vcardAddressEndToken);
+            // _list contains 2 elements where the first element is a single vcard
+            if(_list.size() == 2) {
 
-            QStringList list = http_result.split(vcardAddressBeginToken);
-            if(list.size() > 0) {
-                for(int i=1; i<list.size(); i++) {
+                QString s = _list.at(0);
+                fixHtml(&s);
+                QList<vCard> vcards = vCard::fromByteArray(s.toUtf8());
 
-                    if(Option::isVerbose()) {
-                        cout << list.at(i).toStdString() << endl;
-                    }
+                if(!vcards.isEmpty()) {
+                    foreach(vCard c, vcards) {
+                        // there is only one vcard in the list - every time ;)
+                        Person p;
+                        createPerson(&c, &p);
 
-                    QStringList _list = list.at(i).split(vcardAddressEndToken);
-                    // _list contains 2 elements where the first element is a single vcard
-                    if(_list.size() == 2) {
-
-                        QString s = _list.at(0);
-                        fixHtml(&s);
-                        QList<vCard> vcards = vCard::fromByteArray(s.toStdString().c_str());
-
-                        if(!vcards.isEmpty()) {
-                            foreach(vCard c, vcards) {
-                                // there is only one vcard in the list - every time ;)
-                                Person p;
-                                createPerson(&c, &p);
-
-                                if(p.isValid()) {
-                                    p.rawCardData = s;
-                                    persons.append(p);
-                                }
-                            }
+                        if(p.isValid()) {
+                            p.rawCardData = s;
+                            persons.append(p);
                         }
                     }
                 }
             }
         }
-        else
-        {
-            cout << "failed to get vcard data. code: " << res << endl;
-        }
-
-        curl_easy_cleanup(curl);
-        curl_global_cleanup();
+    }
+    else
+    {
+        cout << "failed to get vcard data. code: " << res << endl;
     }
 
     return persons;
