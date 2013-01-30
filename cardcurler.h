@@ -25,7 +25,7 @@ public:
     CardCurler(const QString &rawQuery);
     QList<Person> curlCard(const QString &url, const QString &username, const QString &password, const QString &query);
     QList<Person> curlCardCache(const QString &query); // query should be the raw query string as we dont query the server
-    void setExport();
+    void setExport(bool b);
 
 private:
 

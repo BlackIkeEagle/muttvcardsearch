@@ -9,8 +9,8 @@ CardCurler::CardCurler(const QString &rawQuery)
     _export = false;
 }
 
-void CardCurler::setExport() {
-    _export = true;
+void CardCurler::setExport(bool b) {
+    _export = b;
 }
 
 void CardCurler::createPerson(const vCard *vcdata, Person *p) {

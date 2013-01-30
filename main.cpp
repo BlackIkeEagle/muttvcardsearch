@@ -91,11 +91,11 @@ int main(int argc, char *argv[])
     }
 
     // preset search template
-    bool _export = false;
+    bool doExport = false;
     QString searchTemplate(":/cardsearch.xml");
     if(opt.hasOption("--create-local-cache")) {
         searchTemplate = ":/carddavexport.xml";
-        _export = true;
+        doExport = true;
     }
 
     // open the search template file from the executable resource
@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
     // there is the cache ;)
     QString cachefile = cfg.getCacheFile();
 
-    if(false == _export) {
+    if(false == doExport) {
         query = query.arg(_arg).arg(_arg);
     } else {
         if(QFile::exists(cachefile)) {
@@ -127,13 +127,13 @@ int main(int argc, char *argv[])
     // only ask the cache if
     // 1) no export was requested
     // 2) the cachefile exists
-    if(!_export && QFile::exists(cachefile)) {
+    if(!doExport && QFile::exists(cachefile)) {
         persons = cc.curlCardCache(QString::fromUtf8(argv[1]));
     }
 
     // if we (still) found no persons, ask the server
     if(persons.size() == 0) {
-        if(_export) cc.setExport();
+        cc.setExport(doExport);
 
         persons = cc.curlCard(
             cfg.getProperty("server"),
@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
     }
 
     if(persons.size() > 0) {
-        if(false == _export) {
+        if(false == doExport) {
             cout << endl; // needed by mutt
             foreach(Person person, persons) {
                 foreach(QString email, person.Emails) {
@@ -157,13 +157,15 @@ int main(int argc, char *argv[])
         } else {
             QFile file(cachefile);
             if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                int numRecords = 0;
                 foreach(Person person, persons) {
                     //cout << person.rawCardData.toStdString() << endl;
                     file.write(person.rawCardData.toStdString().c_str());
                     file.write("\n");
+                    numRecords += 1;
                 }
                 file.close();
-                cout << "Cache created" << endl;
+                cout << "Cache created (" << numRecords << " records)" << endl;
             } else {
                 cout << "Failed to create locale cache in " << cachefile.toStdString() << endl;
             }
