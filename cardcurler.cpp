@@ -22,6 +22,9 @@
 #include "option.h"
 #include <algorithm>
 
+/*
+ * CTOR
+ */
 CardCurler::CardCurler(const QString &username, const QString &password, const QString &url, const QString &rawQuery)
 {
     _url      = url;
@@ -30,6 +33,13 @@ CardCurler::CardCurler(const QString &username, const QString &password, const Q
     _rawQuery = rawQuery;
 }
 
+/*
+ * Private method: used to detect the URL's a carddav server has to offer
+ * Returns a QStringList of all url's found by the XML query given
+ *
+ * @query : the xml snippet the carddav server expects to receive
+ * @return: a QStringList of raw vcard strings (BEGIN:VCARD ... END:VCARD)
+ */
 QStringList CardCurler::getvCardURLs(const QString &query) {
     QString s = get("PROPFIND", query);
 
@@ -58,6 +68,20 @@ QStringList CardCurler::getvCardURLs(const QString &query) {
     return result;
 }
 
+/*
+ * This public method used to fetch all cards for a given account.
+ *
+ * First it will ask the carddav server for the url's and then
+ * walk through each of the url's and download the vcard. If
+ * possible it will not end the connection after each download.
+ * It will cancel the action on any given failure given by libcurl
+ * and return whatever vcards where read at the given moment.
+ *
+ * @server: a full qualified hostname with protocol spec, i.e. http(s)://www.johndoe.com
+ * @query : the xml snippet the carddav server expects to receive
+ *
+ * @return: returns a Qlist of Person objects
+ */
 QList<Person> CardCurler::getAllCards(const QString &server, const QString &query) {
     QList<Person> persons;
 
@@ -85,7 +109,7 @@ QList<Person> CardCurler::getAllCards(const QString &server, const QString &quer
         curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
         curl_easy_setopt(curl, CURLOPT_USERPWD, (QString("%1:%2").arg(_username).arg(_password)).toStdString().c_str());
         curl_easy_setopt(curl, CURLOPT_HEADER, 0L);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &CardCurler::WriteMemoryCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &CardCurler::WriteMemoryCallback); // directly from libcurl homepage
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
 
         foreach(QString url, cardUrls) {
@@ -107,7 +131,7 @@ QList<Person> CardCurler::getAllCards(const QString &server, const QString &quer
 
                 free(chunk.memory);
                 chunk.size = 0;
-                chunk.memory = (char*)malloc(1);
+                chunk.memory = (char*)malloc(1); // reallocate after free!
 
                 if(!card.isNull() && !card.isEmpty()) {
                     Person p;
@@ -136,6 +160,16 @@ QList<Person> CardCurler::getAllCards(const QString &server, const QString &quer
     return persons;
 }
 
+/*
+ * Private method: parses a pointer to a vCard object and pushes
+ * it's information to the Persons pointer.
+ * Only Firstname, Lastname and a List of Emails are of interrest.
+ *
+ * @vcdata: a pointer to a vCard object
+ * @p     : a pointer to a Person object
+ *
+ * @return: void()
+ */
 void CardCurler::createPerson(const vCard *vcdata, Person *p) {
     vCardPropertyList vcPropertyList = vcdata->properties();
     foreach(vCardProperty vcProperty, vcPropertyList) {
@@ -183,6 +217,14 @@ void CardCurler::createPerson(const vCard *vcdata, Person *p) {
     }
 }
 
+/*
+ * Helper method to check if a given list of strings contains a string
+ *
+ * @list..: pointer to a QStringList to check
+ * @query.: the QString to check for
+ *
+ * @return: TRUE if the list contains the query, FALSE otherwise
+ */
 bool CardCurler::listContainsQuery(const QStringList *list, const QString &query) {
     if(list->size() == 0) return false;
     for(int i=0; i<list->size(); i++) {
@@ -368,7 +410,10 @@ QList<Person> CardCurler::curlCard(const QString &query) {
     return persons;
 }
 
-// what a great funtion! thanks SOGo
+/*
+ * This nice method tries to replace all html entities by its real char
+ * It will fail sometime! - or from time to time ;)
+ */
 void CardCurler::fixHtml(QString *data) {
     *data = data->replace("&#13;", "");
     *data = data->replace("&#34;", "\"");
