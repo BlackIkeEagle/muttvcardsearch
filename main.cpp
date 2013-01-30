@@ -1,4 +1,5 @@
 #include <QFile>
+#include <QUrl>
 #include <sys/stat.h>
 #include <vcard/vcard.h>
 #include "option.h"
@@ -124,37 +125,17 @@ int main(int argc, char *argv[])
 
     QList<Person> persons;
 
-    // only ask the cache if
-    // 1) no export was requested
-    // 2) the cachefile exists
-    if(!doExport && QFile::exists(cachefile)) {
-        persons = cc.curlCache(QString::fromUtf8(argv[1]));
-    }
+    if(doExport) {
+        QUrl url(cfg.getProperty("server"));
+        persons = cc.getAllCards(url.toString(QUrl::RemovePath), query);
 
-    // if we (still) found no persons, ask the server
-    if(persons.size() == 0) {
-        cc.setExport(doExport);
-        persons = cc.curlCard(QString(query));
-    }
-
-    if(persons.size() > 0) {
-        if(false == doExport) {
-            cout << endl; // needed by mutt
-            foreach(Person person, persons) {
-                foreach(QString email, person.Emails) {
-                    // allthough a QString is allready UTF8 we need to convert it into something a
-                    // linux console can display without loosing special chars.. like german umlauts for instance
-                    // I tested toUtf8().data() successfully with KDE's konsole and a simple xterm and thus it fits my needs
-                    cout << email.toUtf8().data() << "\t" << person.FirstName.toUtf8().data() << " " << person.LastName.toUtf8().data() << endl;
-                }
-            }
-        } else {
+        if(persons.size() > 0 ) {
             QFile file(cachefile);
             if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
                 int numRecords = 0;
                 foreach(Person person, persons) {
                     //cout << person.rawCardData.toStdString() << endl;
-                    file.write(person.rawCardData.toStdString().c_str());
+                    file.write(person.rawCardData.toUtf8());
                     file.write("\n");
                     numRecords += 1;
                 }
@@ -163,9 +144,32 @@ int main(int argc, char *argv[])
             } else {
                 cout << "Failed to create locale cache in " << cachefile.toStdString() << endl;
             }
+        } else {
+            cout << "Export failed, nothing found" << endl;
         }
     } else {
-        cout << "Nothing found at all" << endl;
+        if(QFile::exists(cachefile)) {
+            persons = cc.curlCache(QString::fromUtf8(argv[1]));
+        }
+
+        if(persons.size() == 0) {
+            persons = cc.curlCard(query);
+        }
+
+        if(persons.size() > 0) {
+            cout << endl; // needed by mutt
+            foreach(Person person, persons) {
+                foreach(QString email, person.Emails) {
+                    // allthough a QString is allready UTF8 we need to convert it into something a
+                    // linux console can display without loosing special chars.. like german umlauts for instance
+                    // I tested toUtf8().data() successfully with KDE's konsole and a simple xterm and thus it fits my needs
+                    //cout << email.toUtf8().data() << "\t" << person.FirstName.toUtf8().data() << " " << person.LastName.toUtf8().data() << endl;
+                    cout << email.toStdString() << "\t" << person.FirstName.toStdString() << " " << person.LastName.toStdString() << endl;
+                }
+            }
+        } else {
+            cout << "Search return no results" << endl;
+        }
     }
 
     return 0;

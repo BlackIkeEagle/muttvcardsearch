@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<C:addressbook-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:carddav">
-  <D:prop>
-    <D:getetag/>
-    <C:address-data>
-      <C:prop name="EMAIL"/>
-      <C:prop name="FN"/>
-    </C:address-data>
-  </D:prop>
-</C:addressbook-query>
+<propfind xmlns="DAV:" xmlns:CS="http://calendarserver.org/ns/">
+  <prop>
+    <CS:getctag/>
+  </prop>
+</propfind>

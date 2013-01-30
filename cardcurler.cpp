@@ -9,24 +9,112 @@ CardCurler::CardCurler(const QString &username, const QString &password, const Q
     _username = username;
     _password = password;
     _rawQuery = rawQuery;
-
-    // defaults to false
-    _export   = false;
 }
 
-void CardCurler::setExport(bool b) {
-    _export = b;
-}
+QStringList CardCurler::getvCardURLs(const QString &query) {
+    QString s = get("PROPFIND", query);
 
-QStringList CardCurler::getvCardURLs() {
-
-}
-
-QList<Person> CardCurler::getAllCards() {
-    QStringList cardUrls = getvCardURLs();
-    foreach(QString vcardURL, cardUrls) {
-        // download card data
+    // check xml case D:href (SOGo) or d:href (owncloud)
+    QString href_begin = "<d:href>";
+    QString href_end = "</d:href>";
+    if(s.indexOf("D:href", 0, Qt::CaseSensitive) > 0) {
+        href_begin = "<D:href>";
+        href_end   = "</D:href>";
     }
+
+    QStringList result;
+    QStringList tokens = s.split(href_begin);
+    if(tokens.size() >= 1) {
+        for(int i=1; i<tokens.size(); i++) {
+            QStringList inner = tokens.at(i).split(href_end);
+            if(inner.size() >= 1) {
+                QString url = inner.at(0);
+                if(url.endsWith(".vcf", Qt::CaseInsensitive)) {
+                    result.append(url);
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
+QList<Person> CardCurler::getAllCards(const QString &server, const QString &query) {
+    QList<Person> persons;
+
+    CURL *curl;
+    CURLcode res;
+
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+    curl = curl_easy_init();
+
+    QStringList cardUrls = getvCardURLs(query);
+
+    if(curl && cardUrls.size() > 0) {
+
+        // init memory chunk
+        struct MemoryStruct chunk;;
+        chunk.size = 0;
+        chunk.memory = (char*)malloc(1);
+
+        if(Option::isVerbose()) {
+            curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+        }
+
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+        curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+        curl_easy_setopt(curl, CURLOPT_USERPWD, (QString("%1:%2").arg(_username).arg(_password)).toStdString().c_str());
+        curl_easy_setopt(curl, CURLOPT_HEADER, 0L);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &CardCurler::WriteMemoryCallback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+
+        foreach(QString url, cardUrls) {
+            curl_easy_setopt(curl, CURLOPT_URL, (server + url).toStdString().c_str());
+            res = curl_easy_perform(curl);
+
+            if(res != CURLE_OK) {
+                cout << "CardCurler::getVCard() failed on URL: "
+                     << url.toStdString()
+                     << ", Code: "
+                     << curl_easy_strerror(res) << endl;
+
+                break;
+            }
+
+            // get the result and reset the chunk
+            if(chunk.memory) {
+                QString card = QString::fromUtf8(chunk.memory);
+
+                free(chunk.memory);
+                chunk.size = 0;
+                chunk.memory = (char*)malloc(1);
+
+                if(!card.isNull() && !card.isEmpty()) {
+                    Person p;
+                    QList<vCard> cards = vCard::fromByteArray(card.toUtf8());
+
+                    if(cards.size() == 1) {
+                        createPerson(&cards[0], &p);
+                        if(p.isValid()) {
+                            cout << "fetched valid vcard from: " << server.toStdString() << url.toStdString() << endl;
+                            p.rawCardData = card;
+                            persons.append(p);
+                        }
+                    }
+                }
+            }
+        }
+
+        /* always cleanup */
+        curl_easy_cleanup(curl);
+
+        if(chunk.memory)
+            free(chunk.memory);
+    }
+
+    curl_global_cleanup();
+    return persons;
 }
 
 void CardCurler::createPerson(const vCard *vcdata, Person *p) {
@@ -65,15 +153,11 @@ void CardCurler::createPerson(const vCard *vcdata, Person *p) {
             }
         }
 
-        // remove addresses the user did probably not search for...
-        // do this only when not exporting!
-        if(false == _export) {
-            QStringList emails = p->Emails;
-            if(emails.size() > 1) {
-                foreach(QString email, emails) {
-                    if(!email.contains(_rawQuery)) {
-                        p->Emails.removeOne(email);
-                    }
+        QStringList emails = p->Emails;
+        if(emails.size() > 1) {
+            foreach(QString email, emails) {
+                if(!email.contains(_rawQuery)) {
+                    p->Emails.removeOne(email);
                 }
             }
         }
@@ -92,7 +176,7 @@ bool CardCurler::listContainsQuery(const QStringList *list, const QString &query
 }
 
 // get server resource using libcurl
-QString CardCurler::get(const QString &requestType, QString query) {
+QString CardCurler::get(const QString& requestType, const QString& query) {
     QString result;
 
     // init_card breaks if it failes
@@ -149,7 +233,7 @@ QString CardCurler::get(const QString &requestType, QString query) {
         curl_easy_cleanup(curl);
     }
 
-    free (vc);
+    if(vc->ptr) free(vc->ptr);
     curl_global_cleanup();
 
     return result;
@@ -414,4 +498,23 @@ size_t CardCurler::readfunc(void *ptr, size_t size, size_t nmemb, void *stream)
     }
 
     return 0;
+}
+
+size_t CardCurler::WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
+{
+  size_t realsize = size * nmemb;
+  struct MemoryStruct *mem = (struct MemoryStruct *)userp;
+
+  mem->memory = (char*)realloc(mem->memory, mem->size + realsize + 1);
+  if (mem->memory == NULL) {
+    /* out of memory! */
+    printf("not enough memory (realloc returned NULL)\n");
+    exit(EXIT_FAILURE);
+  }
+
+  memcpy(&(mem->memory[mem->size]), contents, realsize);
+  mem->size += realsize;
+  mem->memory[mem->size] = 0;
+
+  return realsize;
 }
