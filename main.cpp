@@ -38,11 +38,11 @@ void printError(QString detail) {
 
     cout << ":::::::: ABOUT ::::" << endl;
     cout << APPNAME << " is a small adressbook utility for the mutt mailclient to read your contacts" << endl;
-    cout << "from an owncloud carddav list. (C) Torsten Flammiger, 2013, Licensed under GPLv2." << endl;
-    cout << "See https://github.com/tfl/qvcardsearch for updates and source." << endl << endl;
+    cout << "from an owncloud or SOGo carddav list. (C) Torsten Flammiger, 2013, Licensed under GPLv2." << endl;
+    cout << "See https://github.com/tfl/" << APPNAME << " for updates and source." << endl << endl;
 
     cout << ":::: CONFIGURE ::::" << endl;
-    cout << "$ " << APPNAME << "  --server=OWNCLOUD-CARDDAV-URL \\" << endl;
+    cout << "$ " << APPNAME << "  --server=OWNCLOUD|SOGo-CARDDAV-URL \\" << endl;
     cout << "                   --username=USERNAME \\" << endl;
     cout << "                   --password=PASSWORD \\" << endl << endl;
 
@@ -53,7 +53,7 @@ void printError(QString detail) {
 
     cout << "::::::: SEARCH ::::" << endl;
     cout << "$ " << APPNAME << " <query>" << endl;
-    cout << "where <query> is part of the fullname or email to search. Dont use wildcards like *" << endl << endl;
+    cout << "where <query> is part of the fullname or email to search. Dont use wildcards, like *" << endl << endl;
 
     cout << "NOTE: enclose the parameter values in single or double quotes only if they contain whitespace" << endl;
     cout << "NOTE: a valid Owncloud 4.5 carddav resource url looks something like this:" << endl;
