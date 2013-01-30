@@ -8,13 +8,17 @@
 class Option
 {
 public:
-    Option();
-    QString getOption(int argc, char** argv, const QString &option);
-    bool hasOption(int argc, char **argv, const QString &option);
+    Option(int argc, char **argv);
+    QString getOption(const QString &option);
+    bool hasOption(const QString &option);
     void trimQuotes(QString *s);
     void trimChar(QString *s, const QChar &c);
 
     static bool isVerbose();
+
+private:
+    int _argc;
+    char **_argv;
 };
 
 #endif // OPTION_H

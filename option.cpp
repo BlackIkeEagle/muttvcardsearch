@@ -1,7 +1,9 @@
 #include "option.h"
 
-Option::Option()
+Option::Option(int argc, char **argv)
 {
+    _argc = argc;
+    _argv = argv;
 }
 
 bool Option::isVerbose() {
@@ -12,9 +14,9 @@ bool Option::isVerbose() {
     return false;
 }
 
-bool Option::hasOption(int argc, char **argv, const QString &option) {
-    for(int i=1; i<argc; i++) {
-        QString argument(argv[i]);
+bool Option::hasOption(const QString &option) {
+    for(int i=1; i<_argc; i++) {
+        QString argument(_argv[i]);
         if(argument == option)
             return true;
     }
@@ -22,9 +24,9 @@ bool Option::hasOption(int argc, char **argv, const QString &option) {
     return false;
 }
 
-QString Option::getOption(int argc, char **argv, const QString &option) {
-    for(int i=1; i<argc; i++) {
-        QString argument(argv[i]);
+QString Option::getOption(const QString &option) {
+    for(int i=1; i<_argc; i++) {
+        QString argument(_argv[i]);
 
         QStringList tokens = argument.split("=");
         if(tokens.isEmpty()) return QString();

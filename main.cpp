@@ -47,12 +47,12 @@ int main(int argc, char *argv[])
 {
     Settings::SetApplicationProprties();
     Settings cfg;
-    Option opt;
+    Option opt(argc, argv);
 
     if(argc == 4) {
         QString tmp;
 
-        tmp = opt.getOption(argc, argv, "--server");
+        tmp = opt.getOption("--server");
         if(!tmp.isNull() && !tmp.isEmpty()) {
             opt.trimQuotes(&tmp);
             cfg.setProperty("server", tmp);
@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
             return 1;
         }
 
-        tmp = opt.getOption(argc, argv, "--username");
+        tmp = opt.getOption("--username");
         if(!tmp.isNull() && !tmp.isEmpty()) {
             opt.trimQuotes(&tmp);
             cfg.setProperty("username", tmp);
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
             return 1;
         }
 
-        tmp = opt.getOption(argc, argv, "--password");
+        tmp = opt.getOption("--password");
         if(!tmp.isNull() && !tmp.isEmpty()) {
             opt.trimQuotes(&tmp);
             cfg.setProperty("password", tmp);
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
     // preset search template
     bool _export = false;
     QString searchTemplate(":/cardsearch.xml");
-    if(opt.hasOption(argc, argv, "--create-local-cache")) {
+    if(opt.hasOption("--create-local-cache")) {
         searchTemplate = ":/carddavexport.xml";
         _export = true;
     }
