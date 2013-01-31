@@ -100,8 +100,10 @@ int main(int argc, char *argv[])
             return 1;
         }
 
-        // chmod go-a to the config file
+        // sync to make sure the config file exists
         cfg.sync();
+
+        // chmod go-a to the config file, ignore the results
         chmod(cfg.getConfigDir(), S_IRUSR | S_IWUSR | S_IXUSR);
         chmod(cfg.getConfigFile(), S_IRUSR | S_IWUSR);
 
@@ -126,7 +128,7 @@ int main(int argc, char *argv[])
     input.close();
 
     // The worker. will read from your owncloud server as well as from your local cache.
-    // In the future, it will most probably also write to your owncloud.
+    // In the future, it will most probably also write to your owncloud ;)
     QString _arg = QString::fromLatin1(argv[1]);
     CardCurler cc(cfg.getProperty("username"), cfg.getProperty("password"), cfg.getProperty("server"), _arg);
 
@@ -187,7 +189,7 @@ int main(int argc, char *argv[])
                 }
             }
         } else {
-            cout << "Search return no results" << endl;
+            cout << "Search returned no results" << endl;
         }
     }
 
