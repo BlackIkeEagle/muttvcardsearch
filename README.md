@@ -1,7 +1,7 @@
 muttvcardsearch
 ============
 
-A small mutt carddav search utility for your Owncloud server using QT and libvard
+A small mutt carddav search utility for your Owncloud or SOGo server using QT and libvard
 
 INSTALL
 ------------
