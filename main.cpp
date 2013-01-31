@@ -183,8 +183,7 @@ int main(int argc, char *argv[])
                     // allthough a QString is allready UTF8 we need to convert it into something a
                     // linux console can display without loosing special chars.. like german umlauts for instance
                     // I tested toUtf8().data() successfully with KDE's konsole and a simple xterm and thus it fits my needs
-                    //cout << email.toUtf8().data() << "\t" << person.FirstName.toUtf8().data() << " " << person.LastName.toUtf8().data() << endl;
-                    cout << email.toStdString() << "\t" << person.FirstName.toStdString() << " " << person.LastName.toStdString() << endl;
+                    cout << email.toUtf8().data() << "\t" << person.FirstName.toUtf8().data() << " " << person.LastName.toUtf8().data() << endl;
                 }
             }
         } else {
