@@ -25,6 +25,13 @@ This will download all your contacts into ~/.config/muttvcardsearch/cache.dat wh
 a simple textfile containing your vcards. A new search should then search the local cache first
 and if your query does not return any data it will search the server.
 
+TODO
+------------
+* change cache from a simple file to a sqlite database
+* add option to refresh the cache instead of redownload it every time you made a change on your server
+* add option to save a contact into your vcard store (just like abook)
+* remove libvcard to get rid of QT
+
 PS:
 ------------
 should compile and work on allmost all *NIX versions/distributions where QT is supported and maybe Win32 too,
