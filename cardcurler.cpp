@@ -31,6 +31,8 @@ CardCurler::CardCurler(const QString &username, const QString &password, const Q
     _username = username;
     _password = password;
     _rawQuery = rawQuery;
+
+    exportMode = false;
 }
 
 /*
@@ -84,6 +86,8 @@ QStringList CardCurler::getvCardURLs(const QString &query) {
  */
 QList<Person> CardCurler::getAllCards(const QString &server, const QString &query) {
     QList<Person> persons;
+
+    exportMode = true;
 
     CURL *curl;
     CURLcode res;
@@ -216,11 +220,13 @@ void CardCurler::createPerson(const vCard *vcdata, Person *p) {
             }
         }
 
-        QStringList emails = p->Emails;
-        if(emails.size() > 1) {
-            foreach(QString email, emails) {
-                if(!email.contains(_rawQuery)) {
-                    p->Emails.removeOne(email);
+        if(false == exportMode) {
+            QStringList emails = p->Emails;
+            if(emails.size() > 1) {
+                foreach(QString email, emails) {
+                    if(!email.contains(_rawQuery)) {
+                        p->Emails.removeOne(email);
+                    }
                 }
             }
         }

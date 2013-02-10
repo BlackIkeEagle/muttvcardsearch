@@ -22,7 +22,7 @@ public:
 
     bool openDatabase();
     bool createDatabase();
-    void addVCard(const std::wstring& fn, const std::wstring& ln, const std::wstring& email, const std::wstring& data, const std::wstring& updatedAt);
+    void addVCard(const std::wstring& fn, const std::wstring& ln, const std::vector< std::string > &emails, const std::wstring& data, const std::wstring& updatedAt);
 
 private:
     Settings cfg;
@@ -31,6 +31,12 @@ private:
     std::string cache_file;
 
     bool initSqlite();
+    bool prepSqlite(const std::string &query);
+    bool stepSqlite(const std::string &errMsg);
+    bool finalizeSqlite();
+
+    void addEmails(const std::vector< std::string > &emails, int rowID);
+
     std::wstring buildDateTimeString(const std::wstring& dtString);
     std::string toNarrow(const std::wstring& text);
 };

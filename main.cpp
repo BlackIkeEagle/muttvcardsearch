@@ -66,6 +66,15 @@ void printError(QString detail) {
     cout << endl;
 }
 
+std::vector<std::string> qStringList2Vector(const QStringList& list) {
+    std::vector<std::string> result;
+    foreach(QString s, list) {
+        result.push_back(s.toStdString());
+    }
+
+    return result;
+}
+
 int main(int argc, char *argv[])
 {
     Settings::SetApplicationProprties();
@@ -155,14 +164,15 @@ int main(int argc, char *argv[])
 
         if(persons.size() > 0 ) {
             Cache cache;
-            cache.createDatabase();
+            if(false == cache.createDatabase())
+                return 1;
 
-            int numRecords = 0;
+            //int numRecords = 0;
             foreach(Person p, persons) {
                 cache.addVCard(
                             p.FirstName.toStdWString(),
                             p.LastName.toStdWString(),
-                            p.Emails.at(0).toStdWString(),
+                            qStringList2Vector(p.Emails),
                             p.rawCardData.toStdWString(),
                             p.lastUpdatedAt.toStdWString()
                 );

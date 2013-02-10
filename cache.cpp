@@ -16,6 +16,36 @@ Cache::~Cache() {
     }
 }
 
+bool Cache::finalizeSqlite() {
+    int retVal = sqlite3_finalize(stmt);
+    if(SQLITE_OK != retVal) {
+        std::cerr << "Unable to finalize: " << sqlite3_errstr(retVal) << std::endl;
+        return false;
+    }
+
+    return true;
+}
+
+bool Cache::stepSqlite(const std::string &errMsg) {
+    int retVal = sqlite3_step(stmt);
+    if(SQLITE_DONE != retVal) {
+        std::cerr << errMsg << ": " << sqlite3_errstr(retVal) << std::endl;
+        return false;
+    }
+
+    return true;
+}
+
+bool Cache::prepSqlite(const std::string &query) {
+    int retVal = sqlite3_prepare_v2(db, query.data(), -1, &stmt, NULL);
+    if(SQLITE_OK != retVal) {
+        std::cerr << "Failed to prepare statement: " << query << " - Message:" << sqlite3_errstr(retVal) << std::endl;
+        return false;
+    }
+
+    return true;
+}
+
 std::wstring Cache::buildDateTimeString(const std::wstring &dtString) {
     std::wstring result = dtString;
     int pos = result.find('+');
@@ -90,7 +120,22 @@ std::string Cache::toNarrow(const std::wstring& text)
     return "";
 }
 
-void Cache::addVCard(const std::wstring &fn, const std::wstring &ln, const std::wstring &email, const std::wstring &data, const std::wstring &updatedAt) {
+void Cache::addEmails(const std::vector<std::string> &emails, int rowID) {
+    for(unsigned int i=0; i<emails.size(); i++) {
+        std::string email = emails.at(i);
+
+        std::stringstream ss;
+        ss << "insert into emails (vcardid, mail) values(";
+        ss << rowID;
+        ss << ", '" << email << "')";
+
+        prepSqlite(ss.str());
+        stepSqlite("Failed to add email to database");
+        finalizeSqlite();
+    }
+}
+
+void Cache::addVCard(const std::wstring &fn, const std::wstring &ln, const std::vector< std::string > &emails, const std::wstring &data, const std::wstring &updatedAt) {
     if(fn.length() == 0) {
         std::cerr << "Firstname is empty!" << std::endl;
         return;
@@ -101,7 +146,7 @@ void Cache::addVCard(const std::wstring &fn, const std::wstring &ln, const std::
         return;
     }
 
-    if(email.length() == 0) {
+    if(emails.size() == 0) {
         std::cerr << "Email is empty!" << std::endl;
         return;
     }
@@ -120,26 +165,19 @@ void Cache::addVCard(const std::wstring &fn, const std::wstring &ln, const std::
     std::wstringstream ss;
 
     // happy sql injecting ;)
-    ss << "insert into vcards (FirstName, LastName, Mail, VCard, UpdatedAt) values (";
-    ss << "'" << fn << "','" << ln << "','" << email << "','" << data << "','" << dt << "')";
+    ss << "insert into vcards (FirstName, LastName, VCard, UpdatedAt) values (";
+    ss << "'" << fn << "','" << ln << "','" << data << "','" << dt << "')";
     std::string query = toNarrow(ss.str());
 
-    int retVal = sqlite3_prepare_v2(db, query.data(), -1, &stmt, NULL);
-    if(SQLITE_OK != retVal) {
-        std::cerr << "Failed to prepare insert statement: " << query << " - Message:" << sqlite3_errstr(retVal) << std::endl;
-        return;
-    }
-
-    retVal = sqlite3_step(stmt);
-    if(SQLITE_DONE != retVal) {
-        std::cerr << "Can't step to create table 'vcards' in cache database: " << sqlite3_errstr(retVal) << std::endl;
-        return;
-    }
-
-    retVal = sqlite3_finalize(stmt);
-    if(SQLITE_OK != retVal) {
-        std::cerr << "Unable to finalize add action: " << sqlite3_errstr(retVal) << std::endl;
-        return;
+    bool b = prepSqlite(query);
+    if(b) {
+        b = stepSqlite("Failed to add new record to cache database");
+        if(b) {
+            sqlite3_int64 rowid = sqlite3_last_insert_rowid(db);
+            addEmails(emails, rowid);
+        } else {
+            finalizeSqlite(); // finalize on error only
+        }
     }
 }
 
@@ -163,95 +201,61 @@ bool Cache::createDatabase() {
     }
 
     // create the main table
-    std::string query("CREATE TABLE vcards(VCardID INTEGER PRIMARY KEY, FirstName STRING, LastName STRING, Mail STRING, VCard TEXT, UpdatedAt STRING)");
-    retVal = sqlite3_prepare_v2(db, query.c_str(), query.length(), &stmt, NULL);
-    if(SQLITE_OK != retVal) {
-        std::cerr << "Can't create table 'vcards' in cache database: " << sqlite3_errstr(retVal) << std::endl;
-        return false;
-    }
+    bool b = prepSqlite("CREATE TABLE vcards(VCardID INTEGER PRIMARY KEY, FirstName STRING, LastName STRING, VCard TEXT, UpdatedAt STRING)");
+    if(false == b) return b;
+    b = stepSqlite("Can't step to create table 'vcards' in cache database");
+    if(false == b) return b;
+    b = finalizeSqlite();
+    if(false == b) return b;
 
-    retVal = sqlite3_step(stmt);
-    if(SQLITE_DONE != retVal) {
-        std::cerr << "Can't step to create table 'vcards' in cache database: " << sqlite3_errstr(retVal) << std::endl;
-        return false;
-    }
+    // create the mail table
+    b = prepSqlite("CREATE TABLE emails(ID INTEGER PRIMARY KEY, VCardID INTEGER, Mail STRING)");
+    if(false == b) return b;
+    b = stepSqlite("Can't step to create table 'emails' in cache database");
+    if(false == b) return b;
+    b = finalizeSqlite();
+    if(false == b) return b;
 
     // index on raw vcard data
-    query = "CREATE INDEX vcard_idx ON vcards (vcard)";
-    retVal = sqlite3_prepare_v2(db, query.c_str(), query.length(), &stmt, NULL);
-    if(SQLITE_OK != retVal) {
-        std::cerr << "Can't create index on table 'vcards', column 'vcard': " << sqlite3_errstr(retVal) << std::endl;
-        return false;
-    }
+    b = prepSqlite("CREATE INDEX vcard_idx ON vcards (vcard)");
+    if(false == b) return b;
+    b = stepSqlite("Can't step on index for table 'vcards', column 'vcard'");
+    if(false == b) return b;
+    b = finalizeSqlite();
+    if(false == b) return b;
 
-    retVal = sqlite3_step(stmt);
-    if(SQLITE_DONE != retVal) {
-        std::cerr << "Can't step on index for table 'vcards', column 'vcard': " << sqlite3_errstr(retVal) << std::endl;
-        return false;
-    }
+    // index on email data
+    b = prepSqlite("CREATE INDEX email_idx ON emails (mail)");
+    if(false == b) return b;
+    b = stepSqlite("Can't step on index for table 'emails', column 'mail'");
+    if(false == b) return b;
+    b = finalizeSqlite();
+    if(false == b) return b;
 
     // index on first name
-    query = "CREATE INDEX firstname_idx ON vcards (firstname);";
-    retVal = sqlite3_prepare_v2(db, query.c_str(), query.length(), &stmt, NULL);
-    if(SQLITE_OK != retVal) {
-        std::cerr << "Can't create index on table 'vcards', column 'firstname': " << sqlite3_errstr(retVal) << std::endl;
-        return false;
-    }
-
-    retVal = sqlite3_step(stmt);
-    if(SQLITE_DONE != retVal) {
-        std::cerr << "Can't step on index for table 'vcards', column 'firstname': " << sqlite3_errstr(retVal) << std::endl;
-        return false;
-    }
+    b = prepSqlite("CREATE INDEX firstname_idx ON vcards (firstname)");
+    if(false == b) return b;
+    b = stepSqlite("Can't step on index for table 'vcards', column 'firstname'");
+    if(false == b) return b;
+    b = finalizeSqlite();
+    if(false == b) return b;
 
     // index on last name
-    query = "CREATE INDEX lastname_idx ON vcards (lastname);";
-    retVal = sqlite3_prepare_v2(db, query.c_str(), query.length(), &stmt, NULL);
-    if(SQLITE_OK != retVal) {
-        std::cerr << "Can't create index on table 'vcards', column 'lastname': " << sqlite3_errstr(retVal) << std::endl;
-        return false;
-    }
-
-    retVal = sqlite3_step(stmt);
-    if(SQLITE_DONE != retVal) {
-        std::cerr << "Can't step on index for table 'vcards', column 'lastname': " << sqlite3_errstr(retVal) << std::endl;
-        return false;
-    }
-
-    // index on email
-    query = "CREATE INDEX mail_idx ON vcards (mail);";
-    retVal = sqlite3_prepare_v2(db, query.c_str(), query.length(), &stmt, NULL);
-    if(SQLITE_OK != retVal) {
-        std::cerr << "Can't create index on table 'vcards', column 'mail': " << sqlite3_errstr(retVal) << std::endl;
-        return false;
-    }
-
-    retVal = sqlite3_step(stmt);
-    if(SQLITE_DONE != retVal) {
-        std::cerr << "Can't step on index for table 'vcards', column 'mail': " << sqlite3_errstr(retVal) << std::endl;
-        return false;
-    }
+    b = prepSqlite("CREATE INDEX lastname_idx ON vcards (lastname)");
+    if(false == b) return b;
+    b = stepSqlite("Can't step on index for table 'vcards', column 'lastname'");
+    if(false == b) return b;
+    b = finalizeSqlite();
+    if(false == b) return b;
 
     // index on updatedat
-    query = "CREATE INDEX updatedat_idx ON vcards (updatedat);";
-    retVal = sqlite3_prepare_v2(db, query.c_str(), query.length(), &stmt, NULL);
-    if(SQLITE_OK != retVal) {
-        std::cerr << "Can't create index on table 'vcards', column 'updatedat': " << sqlite3_errstr(retVal) << std::endl;
-        return false;
-    }
-
-    retVal = sqlite3_step(stmt);
-    if(SQLITE_DONE != retVal) {
-        std::cerr << "Can't step on index for table 'vcards', column 'updatedat': " << sqlite3_errstr(retVal) << std::endl;
-        return false;
-    }
-
-    retVal = sqlite3_finalize(stmt);
-    if(SQLITE_OK != retVal) {
-        std::cerr << "Unable to finalize cache creation: " << sqlite3_errstr(retVal) << std::endl;
-        return false;
-    }
+    b = prepSqlite("CREATE INDEX updatedat_idx ON vcards (updatedat)");
+    if(false == b) return b;
+    b = stepSqlite("Can't step on index for table 'vcards', column 'updatedat'");
+    if(false == b) return b;
+    b = finalizeSqlite();
+    if(false == b) return b;
 
     std::cout << "New cache database created in '" << cache_file << "'" << std::endl;
-    return true;
+    return b;
 }

@@ -72,6 +72,10 @@ private:
     CURL *curl;
     CURLcode res;
 
+    // if this becomes TRUE, createPerson will not
+    // use _rawQuery to remove unwanted emails
+    bool exportMode;
+
     QString _url;
     QString _username;
     QString _password;
