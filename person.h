@@ -30,6 +30,7 @@ public:
     Person();
     QString FirstName;
     QString LastName;
+    QString lastUpdatedAt;
     QStringList Emails;
     QString rawCardData;
 

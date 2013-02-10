@@ -33,16 +33,19 @@ SOURCES += main.cpp \
     cardcurler.cpp \
     person.cpp \
     settings.cpp \
-    option.cpp
+    option.cpp \
+    cache.cpp
 
-LIBS += -lcurl -lvcard
+LIBS += -lcurl -lvcard -lsqlite3
 
 HEADERS += \
     cardcurler.h \
     person.h \
     settings.h \
     option.h \
-    version.h
+    version.h \
+    cache.h \
+    unicode.h
 
 RESOURCES += \
     carddavquery.qrc

@@ -27,6 +27,8 @@
 #include "settings.h"
 #include "version.h"
 
+#include "cache.h"
+
 void printError(QString detail) {
     cout << detail.toStdString() << endl << endl;
 
@@ -152,20 +154,34 @@ int main(int argc, char *argv[])
         persons = cc.getAllCards(url.toString(QUrl::RemovePath), query);
 
         if(persons.size() > 0 ) {
-            QFile file(cachefile);
-            if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-                int numRecords = 0;
-                foreach(Person person, persons) {
-                    //cout << person.rawCardData.toStdString() << endl;
-                    file.write(person.rawCardData.toUtf8());
-                    file.write("\n");
-                    numRecords += 1;
-                }
-                file.close();
-                cout << "Cache created (" << numRecords << " records)" << endl;
-            } else {
-                cout << "Failed to create locale cache in " << cachefile.toStdString() << endl;
+            Cache cache;
+            cache.createDatabase();
+
+            int numRecords = 0;
+            foreach(Person p, persons) {
+                cache.addVCard(
+                            p.FirstName.toStdWString(),
+                            p.LastName.toStdWString(),
+                            p.Emails.at(0).toStdWString(),
+                            p.rawCardData.toStdWString(),
+                            p.lastUpdatedAt.toStdWString()
+                );
             }
+
+//            QFile file(cachefile);
+//            if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+//                int numRecords = 0;
+//                foreach(Person person, persons) {
+//                    //cout << person.rawCardData.toStdString() << endl;
+//                    file.write(person.rawCardData.toUtf8());
+//                    file.write("\n");
+//                    numRecords += 1;
+//                }
+//                file.close();
+//                cout << "Cache created (" << numRecords << " records)" << endl;
+//            } else {
+//                cout << "Failed to create locale cache in " << cachefile.toStdString() << endl;
+//            }
         } else {
             cout << "Export failed, nothing found" << endl;
         }

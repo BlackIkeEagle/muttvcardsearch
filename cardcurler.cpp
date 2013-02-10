@@ -112,12 +112,13 @@ QList<Person> CardCurler::getAllCards(const QString &server, const QString &quer
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &CardCurler::WriteMemoryCallback); // directly from libcurl homepage
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
 
+        //int j = 0;
         foreach(QString url, cardUrls) {
             curl_easy_setopt(curl, CURLOPT_URL, (server + url).toStdString().c_str());
             res = curl_easy_perform(curl);
 
             if(res != CURLE_OK) {
-                cout << "CardCurler::getVCard() failed on URL: "
+                cerr << "CardCurler::getVCard() failed on URL: "
                      << url.toStdString()
                      << ", Code: "
                      << curl_easy_strerror(res) << endl;
@@ -143,10 +144,13 @@ QList<Person> CardCurler::getAllCards(const QString &server, const QString &quer
                             cout << "fetched valid vcard from: " << server.toStdString() << url.toStdString() << endl;
                             p.rawCardData = card;
                             persons.append(p);
+                            //j++;
                         }
                     }
                 }
             }
+
+            //if(j>12) break;
         }
 
         /* always cleanup */
@@ -203,6 +207,12 @@ void CardCurler::createPerson(const vCard *vcdata, Person *p) {
                         cerr << "VCard property 'FN' contains invalid value(s): more then 2 tokens or none at all!: " << formattedName.toStdString() << endl;
                     }
                 }
+            }
+        } else if (vcProperty.name() == VC_REVISION) {
+            // append updated_at to the person
+            QStringList revs = vcProperty.values();
+            if(!revs.empty()) {
+                p->lastUpdatedAt = revs.at(0);
             }
         }
 
