@@ -1,3 +1,4 @@
+// encoding: ünicode
 /***************************************************************************
  *   Copyright (C) 2013 by Torsten Flammiger                               *
  *   github@netfg.net                                                      *
@@ -29,8 +30,8 @@ class Option
 {
 public:
     Option(int argc, char **argv);
-    QString getOption(const QString &option);
-    bool hasOption(const QString &option);
+    std::string getOption(const std::string &option);
+    bool hasOption(const std::string &option);
     void trimQuotes(QString *s);
     void trimChar(QString *s, const QChar &c);
 

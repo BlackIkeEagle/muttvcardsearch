@@ -1,3 +1,4 @@
+// encoding: ünicode
 /***************************************************************************
  *   Copyright (C) 2013 by Torsten Flammiger                               *
  *   github@netfg.net                                                      *
@@ -21,6 +22,7 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+#include <string>
 #include <QCoreApplication>
 #include <QSettings>
 #include <QFileInfo>
@@ -31,10 +33,10 @@ class Settings
 {
 public:
     static void SetApplicationProprties();
-    void setProperty(QString key, QVariant value);
+    void setProperty(std::string key, std::string& value);
     void sync();
-    QString getProperty(QString key);
-    const QString getCacheFile();
+    std::string getProperty(const std::string &key);
+    const std::string getCacheFile();
     const char* getConfigDir();
     const char* getConfigFile();
 

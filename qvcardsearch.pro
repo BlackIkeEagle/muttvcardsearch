@@ -25,6 +25,8 @@ TARGET = muttvcardsearch
 CONFIG   += console
 CONFIG   -= app_bundle
 
+INCLUDEPATH +=
+
 TEMPLATE = app
 target.path = /usr/bin
 INSTALLS += target
@@ -34,7 +36,10 @@ SOURCES += main.cpp \
     person.cpp \
     settings.cpp \
     option.cpp \
-    cache.cpp
+    cache.cpp \
+    encoding.cpp \
+    url.cpp \
+    stringutils.cpp
 
 LIBS += -lcurl -lvcard -lsqlite3
 
@@ -45,7 +50,9 @@ HEADERS += \
     option.h \
     version.h \
     cache.h \
-    unicode.h
+    encoding.h \
+    url.h \
+    stringutils.h
 
 RESOURCES += \
     carddavquery.qrc

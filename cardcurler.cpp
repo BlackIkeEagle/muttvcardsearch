@@ -1,3 +1,4 @@
+// encoding: ünicode
 /***************************************************************************
  *   Copyright (C) 2013 by Torsten Flammiger                               *
  *   github@netfg.net                                                      *
@@ -20,12 +21,12 @@
 
 #include "cardcurler.h"
 #include "option.h"
-#include <algorithm>
+#include "cache.h"
 
 /*
  * CTOR
  */
-CardCurler::CardCurler(const QString &username, const QString &password, const QString &url, const QString &rawQuery)
+CardCurler::CardCurler(const std::string &username, const std::string &password, const std::string &url, const string &rawQuery)
 {
     _url      = url;
     _username = username;
@@ -42,26 +43,28 @@ CardCurler::CardCurler(const QString &username, const QString &password, const Q
  * @query : the xml snippet the carddav server expects to receive
  * @return: a QStringList of raw vcard strings (BEGIN:VCARD ... END:VCARD)
  */
-QStringList CardCurler::getvCardURLs(const QString &query) {
-    QString s = get("PROPFIND", query);
+std::vector<std::string> CardCurler::getvCardURLs(const std::string &query) {
+    std::string s = get("PROPFIND", query);
 
     // check xml case D:href (SOGo) or d:href (owncloud)
-    QString href_begin = "<d:href>";
-    QString href_end = "</d:href>";
-    if(s.indexOf("D:href", 0, Qt::CaseSensitive) > 0) {
+    std::string href_begin = "<d:href>";
+    std::string href_end = "</d:href>";
+    if( s.find("D:href", 0) != std::string::npos ) {
         href_begin = "<D:href>";
         href_end   = "</D:href>";
     }
 
-    QStringList result;
-    QStringList tokens = s.split(href_begin);
+    std::vector<std::string> result;
+    std::vector<std::string> tokens = StringUtils::split(s, href_begin);
+
     if(tokens.size() >= 1) {
-        for(int i=1; i<tokens.size(); i++) {
-            QStringList inner = tokens.at(i).split(href_end);
+        for(unsigned int i=1; i<tokens.size(); i++) {
+            std::vector<std::string> inner = StringUtils::split(tokens.at(i), href_end);;
             if(inner.size() >= 1) {
-                QString url = inner.at(0);
-                if(url.endsWith(".vcf", Qt::CaseInsensitive)) {
-                    result.append(url);
+                std::string url = inner.at(0);
+
+                if(StringUtils::endsWith(url, "vcf")) {
+                    result.push_back(url);
                 }
             }
         }
@@ -84,8 +87,8 @@ QStringList CardCurler::getvCardURLs(const QString &query) {
  *
  * @return: returns a Qlist of Person objects
  */
-QList<Person> CardCurler::getAllCards(const QString &server, const QString &query) {
-    QList<Person> persons;
+std::vector<Person> CardCurler::getAllCards(const std::string &server, const std::string &query) {
+    std::vector<Person> persons;
 
     exportMode = true;
 
@@ -95,7 +98,7 @@ QList<Person> CardCurler::getAllCards(const QString &server, const QString &quer
     curl_global_init(CURL_GLOBAL_DEFAULT);
     curl = curl_easy_init();
 
-    QStringList cardUrls = getvCardURLs(query);
+    std::vector< std::string > cardUrls = getvCardURLs(query);
 
     if(curl && cardUrls.size() > 0) {
 
@@ -108,22 +111,26 @@ QList<Person> CardCurler::getAllCards(const QString &server, const QString &quer
             curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
         }
 
+        std::string auth(_username + ":" + _password);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
         curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-        curl_easy_setopt(curl, CURLOPT_USERPWD, (QString("%1:%2").arg(_username).arg(_password)).toStdString().c_str());
+        curl_easy_setopt(curl, CURLOPT_USERPWD, auth.c_str());
         curl_easy_setopt(curl, CURLOPT_HEADER, 0L);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &CardCurler::WriteMemoryCallback); // directly from libcurl homepage
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
 
         //int j = 0;
-        foreach(QString url, cardUrls) {
-            curl_easy_setopt(curl, CURLOPT_URL, (server + url).toStdString().c_str());
+        foreach(std::string url, cardUrls) {
+            std::stringstream ss;
+            ss << server << url;
+
+            curl_easy_setopt(curl, CURLOPT_URL, ss.str().c_str());
             res = curl_easy_perform(curl);
 
             if(res != CURLE_OK) {
-                cerr << "CardCurler::getVCard() failed on URL: "
-                     << url.toStdString()
+                std::cerr << "CardCurler::getVCard() failed on URL: "
+                     << url
                      << ", Code: "
                      << curl_easy_strerror(res) << endl;
 
@@ -132,22 +139,23 @@ QList<Person> CardCurler::getAllCards(const QString &server, const QString &quer
 
             // get the result and reset the chunk
             if(chunk.memory) {
-                QString card = QString::fromUtf8(chunk.memory);
+                //std::string card(chunk.memory);
+                std::string card(chunk.memory);
 
                 free(chunk.memory);
                 chunk.size = 0;
                 chunk.memory = (char*)malloc(1); // reallocate after free!
 
-                if(!card.isNull() && !card.isEmpty()) {
+                if(card.size() > 0) {
                     Person p;
-                    QList<vCard> cards = vCard::fromByteArray(card.toUtf8());
+                    QList<vCard> cards = vCard::fromByteArray(QString::fromStdString(card).toUtf8());
 
                     if(cards.size() == 1) {
                         createPerson(&cards[0], &p);
                         if(p.isValid()) {
-                            cout << "fetched valid vcard from: " << server.toStdString() << url.toStdString() << endl;
+                            std::cout << "fetched valid vcard from: " << server << url << endl;
                             p.rawCardData = card;
-                            persons.append(p);
+                            persons.push_back(p);
                             //j++;
                         }
                     }
@@ -182,15 +190,17 @@ void CardCurler::createPerson(const vCard *vcdata, Person *p) {
     vCardPropertyList vcPropertyList = vcdata->properties();
     foreach(vCardProperty vcProperty, vcPropertyList) {
         if(vcProperty.name() == VC_EMAIL) {
-            p->Emails.append(vcProperty.values());
+            foreach(QString s, vcProperty.values()) {
+                p->Emails.push_back(s.toStdString());
+            }
         } else if(vcProperty.name() == VC_NAME) {
             QStringList values = vcProperty.values();
             if (!values.isEmpty()) {
                 QString fName = values.at(vCardProperty::Firstname);
                 QString lName = values.at(vCardProperty::Lastname);
                 if(!fName.isNull() && !fName.isEmpty() && lName.isNull() && !lName.isEmpty()) {
-                    p->FirstName = fName;
-                    p->LastName = lName;
+                    p->FirstName = fName.toStdString();
+                    p->LastName = lName.toStdString();
                 }
             }
         } else if(vcProperty.name() == VC_FORMATTED_NAME) {
@@ -198,15 +208,15 @@ void CardCurler::createPerson(const vCard *vcdata, Person *p) {
             // who dont have a N (i.e. VC_NAME property containing firstname and lastname separately)
             // but instead have only the formatted name property. So i will split this string
             // on each whitespace and combine it somewhat friendly... But what about a title?
-            if(p->FirstName.isEmpty() || p->LastName.isEmpty()) {
+            if(p->FirstName.size() == 0 || p->LastName.size() == 0) {
                 QString formattedName = vcProperty.values().at(0);
                 if(formattedName.isNull() || formattedName.isEmpty()) {
                     cerr << "There is no vcard property at index 0. Therefore I cant read the value of formatted name (FN)." << endl;
                 } else {
                     QStringList tokens = formattedName.split(QRegExp("\\s"));
                     if(!tokens.isEmpty() && tokens.size() == 2) {
-                        p->FirstName = tokens.at(0);
-                        p->LastName = tokens.at(1);
+                        p->FirstName = tokens.at(0).toStdString();
+                        p->LastName = tokens.at(1).toStdString();
                     } else {
                         cerr << "VCard property 'FN' contains invalid value(s): more then 2 tokens or none at all!: " << formattedName.toStdString() << endl;
                     }
@@ -216,18 +226,21 @@ void CardCurler::createPerson(const vCard *vcdata, Person *p) {
             // append updated_at to the person
             QStringList revs = vcProperty.values();
             if(!revs.empty()) {
-                p->lastUpdatedAt = revs.at(0);
+                p->lastUpdatedAt = revs.at(0).toStdString();
             }
         }
 
         if(false == exportMode) {
-            QStringList emails = p->Emails;
+            std::vector<std::string> emails = p->Emails;
             if(emails.size() > 1) {
-                foreach(QString email, emails) {
-                    if(!email.contains(_rawQuery)) {
-                        p->Emails.removeOne(email);
-                    }
-                }
+                int counter = 0;
+//                foreach(std::string email, emails) {
+//                    unsigned int match = email.find(_rawQuery );
+//                    if( match != std::string::npos ) {
+//                        p->Emails.erase(p->Emails.begin() + counter);
+//                    }
+//                    counter++;
+//                }
             }
         }
     }
@@ -253,16 +266,15 @@ bool CardCurler::listContainsQuery(const QStringList *list, const QString &query
 }
 
 // get server resource using libcurl
-QString CardCurler::get(const QString& requestType, const QString& query) {
-    QString result;
+std::string CardCurler::get(const string &requestType, const std::string& query) {
+    std::string result;
 
     // init_card breaks if it failes
     vcdata *vc = new vcdata();
     init_vcard(vc);
 
-    // prepare the data structure from which curl reads the query to send to the peer
-    QByteArray _ba = query.toAscii();
-    char *data = _ba.data();
+    // prepare the data structure from which curl reads the query which is then send to the peer
+    char *data = (char *)(query.c_str());
 
     // read-data (the query)
     postdata pdata;
@@ -281,13 +293,14 @@ QString CardCurler::get(const QString& requestType, const QString& query) {
         headers = curl_slist_append(headers, "Depth: 1");
         headers = curl_slist_append(headers, "Content-Type: text/xml; charset=utf-8");
 
+        std::string auth(_username + ":" + _password);
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-        curl_easy_setopt(curl, CURLOPT_URL, _url.toStdString().c_str());
+        curl_easy_setopt(curl, CURLOPT_URL, _url.c_str());
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
         curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-        curl_easy_setopt(curl, CURLOPT_USERPWD, (QString("%1:%2").arg(_username).arg(_password)).toStdString().c_str());
-        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, requestType.toStdString().c_str());
+        curl_easy_setopt(curl, CURLOPT_USERPWD, auth.c_str());
+        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, requestType.c_str());
 
         curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)pdata.body_size);
         curl_easy_setopt(curl, CURLOPT_READDATA, &pdata);
@@ -304,7 +317,7 @@ QString CardCurler::get(const QString& requestType, const QString& query) {
 
         res = curl_easy_perform(curl);
         if(res == CURLE_OK) {
-           result = QString::fromUtf8(vc->ptr);
+            result = vc->ptr;
         }
 
         curl_easy_cleanup(curl);
@@ -316,112 +329,72 @@ QString CardCurler::get(const QString& requestType, const QString& query) {
     return result;
 }
 
-QList<Person> CardCurler::curlCache(const QString &query) {
-    QList<Person> persons;
-    Settings cfg;
-    QString cachefile = cfg.getCacheFile();
+std::vector<Person> CardCurler::curlCache(const std::string &query) {
 
-    if(QFile::exists(cachefile)) {
-        QString line, vcard;
+    std::stringstream ss;
+    ss << "select v.firstname, v.lastname, e.mail from vcards v, emails e ";
+    ss << "where e.vcardid = v.vcardid and (lower(v.firstname) like '%"<< query << "%' ";
+    ss << "or lower(v.firstname) like '%"<< query << "%' ";
+    ss << "or lower(v.lastname) like '%"<< query << "%' ";
+    ss << "or lower(e.mail) like '%"<< query << "%')";
 
-        QFile input(cachefile);
-        if( input.open(QFile::ReadOnly | QFile::Text) ) {
-            QTextStream in(&input);
-            in.setCodec("UTF-8");
-
-            line = in.readLine();
-            vcard = line;
-            vcard.append('\n');
-
-            while (!line.isNull()) {
-                line = in.readLine();
-                vcard += line;
-                vcard.append('\n');
-
-                if(line == "END:VCARD") {
-                    QByteArray utf8card;
-                    utf8card.append(vcard.toUtf8());
-
-                    if(Option::isVerbose()) {
-                        cout << "FROM CACHE:" << endl;
-                        cout << vcard.toStdString() << endl;
-                    }
-
-                    QList<vCard> vcards = vCard::fromByteArray(utf8card);
-                    vcard = ""; // reset!
-
-                    if(!vcards.isEmpty()) {
-                        foreach(vCard vc, vcards) {
-                            Person p;
-                            createPerson(&vc, &p);
-
-                            if(p.LastName.contains(query, Qt::CaseInsensitive)  || p.FirstName.contains(query, Qt::CaseInsensitive) || listContainsQuery(&p.Emails, query)) {
-                                persons.append(p);
-                            }
-                        }
-                    }
-                }
-            }
-
-            input.close();
-        }
-    }
-
-    return persons;
+    Cache cache;
+    return cache.findInCache(ss.str());
 }
 
 // curl a card online
-QList<Person> CardCurler::curlCard(const QString &query) {
+std::vector<Person> CardCurler::curlCard(const std::string &query) {
 
     // Result
-    QList<Person> persons;
+    std::vector<Person> persons;
 
-    QString http_result = get("REPORT", query);
+    // execute the query!
+    std::string http_result = get("REPORT", query);
 
-    QString vcardAddressBeginToken = "<card:address-data>"; // defaults to Owncloud
-    QString vcardAddressEndToken = "</card:address-data>";
+    std::string vcardAddressBeginToken = "<card:address-data>"; // defaults to Owncloud
+    std::string vcardAddressEndToken = "</card:address-data>";
 
-    if(http_result.contains("<C:address-data>")) {
+    if(http_result.find("<C:address-data>")) {
         vcardAddressBeginToken = "<C:address-data>";
         vcardAddressEndToken   = "</C:address-data>";
     }
 
 
-    QStringList list = http_result.split(vcardAddressBeginToken);
-    if(list.size() > 0) {
-        for(int i=1; i<list.size(); i++) {
+//    QStringList list = http_result.split(vcardAddressBeginToken);
+//    if(list.size() > 0) {
+//        for(int i=1; i<list.size(); i++) {
 
-            if(Option::isVerbose()) {
-                cout << list.at(i).toStdString() << endl;
-            }
+//            if(Option::isVerbose()) {
+//                cout << list.at(i).toStdString() << endl;
+//            }
 
-            QStringList _list = list.at(i).split(vcardAddressEndToken);
-            // _list contains 2 elements where the first element is a single vcard
-            if(_list.size() == 2) {
+//            QStringList _list = list.at(i).split(vcardAddressEndToken);
+//            // _list contains 2 elements where the first element is a single vcard
+//            if(_list.size() == 2) {
 
-                QString s = _list.at(0);
-                fixHtml(&s);
-                QList<vCard> vcards = vCard::fromByteArray(s.toUtf8());
+//                std::string s = _list.at(0).toStdString();
+//                //fixHtml(&s);
+//                QList<vCard> vcards = vCard::fromByteArray(QString::fromStdString(s).toUtf8());
 
-                if(!vcards.isEmpty()) {
-                    foreach(vCard c, vcards) {
-                        // there is only one vcard in the list - every time ;)
-                        Person p;
-                        createPerson(&c, &p);
+//                if(!vcards.isEmpty()) {
+//                    foreach(vCard c, vcards) {
+//                        // there is only one vcard in the list - every time ;)
+//                        Person p;
+//                        createPerson(&c, &p);
 
-                        if(p.isValid()) {
-                            p.rawCardData = s;
-                            persons.append(p);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    else
-    {
-        cout << "failed to get vcard data. code: " << res << endl;
-    }
+//                        if(p.isValid()) {
+//                            p.rawCardData = s;
+//                            persons.push_back(p);
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//    else
+//    {
+//        cout << "failed to get vcard data. code: " << res << endl;
+//    }
 
     return persons;
 }

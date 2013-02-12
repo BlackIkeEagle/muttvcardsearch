@@ -1,3 +1,4 @@
+// encoding: ünicode
 /***************************************************************************
  *   Copyright (C) 2013 by Torsten Flammiger                               *
  *   github@netfg.net                                                      *
@@ -25,9 +26,8 @@ Person::Person()
 }
 
 bool Person::isValid() {
-    if( this->Emails.size() > 0 && !this->FirstName.isEmpty() && !this->LastName.isEmpty() ) {
+    if( this->Emails.size() > 0 && this->FirstName.length() > 0 && this->LastName.size() > 0 )
         return true;
-    } else {
-        return false;
-    }
+
+    return false;
 }

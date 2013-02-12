@@ -1,3 +1,4 @@
+// encoding: ünicode
 /***************************************************************************
  *   Copyright (C) 2013 by Torsten Flammiger                               *
  *   github@netfg.net                                                      *
@@ -34,9 +35,9 @@ bool Option::isVerbose() {
     return false;
 }
 
-bool Option::hasOption(const QString &option) {
+bool Option::hasOption(const std::string &option) {
     for(int i=1; i<_argc; i++) {
-        QString argument(_argv[i]);
+        std::string argument(_argv[i]);
         if(argument == option)
             return true;
     }
@@ -44,18 +45,19 @@ bool Option::hasOption(const QString &option) {
     return false;
 }
 
-QString Option::getOption(const QString &option) {
+std::string Option::getOption(const std::string &option) {
     for(int i=1; i<_argc; i++) {
-        QString argument(_argv[i]);
+        std::string argument(_argv[i]);
 
-        QStringList tokens = argument.split("=");
-        if(tokens.isEmpty()) return QString();
+        int position = argument.find('=');
+        std::string left = argument.substr(0, position);
+        std::string right = argument.substr(position);
 
         // sanitize me!
-        if(tokens.at(0) == option) return tokens.at(1);
+        if(left == option) return right;
     }
 
-    return QString();
+    return "";
 }
 
 void Option::trimChar(QString *s, const QChar &c) {

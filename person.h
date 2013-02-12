@@ -1,3 +1,4 @@
+// encoding: ünicode
 /***************************************************************************
  *   Copyright (C) 2013 by Torsten Flammiger                               *
  *   github@netfg.net                                                      *
@@ -21,18 +22,18 @@
 #ifndef PERSON_H
 #define PERSON_H
 
-#include <QString>
-#include <QStringList>
+#include <string>
+#include <vector>
 
 class Person
 {
 public:
     Person();
-    QString FirstName;
-    QString LastName;
-    QString lastUpdatedAt;
-    QStringList Emails;
-    QString rawCardData;
+    std::string FirstName;
+    std::string LastName;
+    std::string lastUpdatedAt;
+    std::vector< std::string > Emails;
+    std::string rawCardData;
 
     bool isValid();
 };

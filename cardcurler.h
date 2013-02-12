@@ -1,3 +1,4 @@
+// encoding: ünicode
 /***************************************************************************
  *   Copyright (C) 2013 by Torsten Flammiger                               *
  *   github@netfg.net                                                      *
@@ -27,9 +28,10 @@ using namespace std;
 #include <curl/curl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <vector>
 
 #include <QString>
 #include <QStringList>
@@ -38,14 +40,16 @@ using namespace std;
 #include <vcard/vcard.h>
 #include "person.h"
 #include "settings.h"
+#include "encoding.h"
+#include "stringutils.h"
 
 class CardCurler
 {
 public:
-    CardCurler(const QString &username, const QString &password, const QString &url, const QString &rawQuery);
-    QList<Person> curlCard(const QString &query);
-    QList<Person> curlCache(const QString &query); // query should be the raw query string as we dont query the server
-    QList<Person> getAllCards(const QString& server, const QString &query);
+    CardCurler(const std::string &username, const std::string &password, const std::string &url, const std::string &rawQuery);
+    std::vector<Person> curlCard(const std::string &query);
+    std::vector<Person> curlCache(const std::string &query); // query should be the raw query string as we dont query the server
+    std::vector<Person> getAllCards(const std::string &server, const std::string &query);
 
 private:
 
@@ -76,14 +80,14 @@ private:
     // use _rawQuery to remove unwanted emails
     bool exportMode;
 
-    QString _url;
-    QString _username;
-    QString _password;
-    QString _rawQuery;
+    std::string _url;
+    std::string _username;
+    std::string _password;
+    std::string _rawQuery;
 
     QString getVCards(const QStringList& urls);
-    QString get(const QString& requestType, const QString& query = QString());
-    QStringList getvCardURLs(const QString &query);
+    std::string get(const std::string& requestType, const std::string &query = std::string());
+    std::vector< std::string > getvCardURLs(const std::string &query);
     void fixHtml(QString* data);
     void init_vcard(struct vcdata *vc);
     void createPerson(const vCard *vcdata, Person *p);

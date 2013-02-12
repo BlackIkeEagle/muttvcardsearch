@@ -18,15 +18,15 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include <vector>
 #include <QFile>
-#include <QUrl>
 #include <sys/stat.h>
 #include <vcard/vcard.h>
 #include "option.h"
 #include "cardcurler.h"
 #include "settings.h"
 #include "version.h"
-
+#include "url.h"
 #include "cache.h"
 
 void printError(QString detail) {
@@ -82,11 +82,11 @@ int main(int argc, char *argv[])
     Option opt(argc, argv);
 
     if(argc == 4) {
-        QString tmp;
+        std::string tmp;
 
         tmp = opt.getOption("--server");
-        if(!tmp.isNull() && !tmp.isEmpty()) {
-            opt.trimQuotes(&tmp);
+        if(!tmp.length() <= 0) {
+            //opt.trimQuotes(&tmp);
             cfg.setProperty("server", tmp);
         } else {
             printError("property --server=xxx missing");
@@ -94,8 +94,8 @@ int main(int argc, char *argv[])
         }
 
         tmp = opt.getOption("--username");
-        if(!tmp.isNull() && !tmp.isEmpty()) {
-            opt.trimQuotes(&tmp);
+        if(!tmp.length() <= 0) {
+            //opt.trimQuotes(&tmp);
             cfg.setProperty("username", tmp);
         } else {
             printError("property --username=xxx missing");
@@ -103,8 +103,8 @@ int main(int argc, char *argv[])
         }
 
         tmp = opt.getOption("--password");
-        if(!tmp.isNull() && !tmp.isEmpty()) {
-            opt.trimQuotes(&tmp);
+        if(!tmp.length() <= 0) {
+            //opt.trimQuotes(&tmp);
             cfg.setProperty("password", tmp);
         } else {
             printError("property --password=xxx missing");
@@ -125,11 +125,12 @@ int main(int argc, char *argv[])
     }
 
     // preset search template
-    bool doExport = false;
+    bool doCache = false;
+
     QString searchTemplate(":/cardsearch.xml");
     if(opt.hasOption("--create-local-cache")) {
         searchTemplate = ":/carddavexport.xml";
-        doExport = true;
+        doCache = true;
     }
 
     // open the search template file from the executable resource
@@ -140,14 +141,13 @@ int main(int argc, char *argv[])
 
     // The worker. will read from your owncloud server as well as from your local cache.
     // In the future, it will most probably also write to your owncloud ;)
-    QString _arg = QString::fromLatin1(argv[1]);
-    CardCurler cc(cfg.getProperty("username"), cfg.getProperty("password"), cfg.getProperty("server"), _arg);
+    CardCurler cc(cfg.getProperty("username"), cfg.getProperty("password"), cfg.getProperty("server"), argv[1]);
 
     // there is the cache ;)
-    QString cachefile = cfg.getCacheFile();
+    QString cachefile = QString::fromStdString(cfg.getCacheFile());
 
-    if(false == doExport) {
-        query = query.arg(_arg).arg(_arg);
+    if(false == doCache) {
+        //query = query.arg(argv[1]).arg(argv[1]);
     } else {
         if(QFile::exists(cachefile)) {
             if(QFile::remove(cachefile)) {
@@ -156,62 +156,51 @@ int main(int argc, char *argv[])
         }
     }
 
-    QList<Person> persons;
+    std::vector<Person> people;
 
-    if(doExport) {
-        QUrl url(cfg.getProperty("server"));
-        persons = cc.getAllCards(url.toString(QUrl::RemovePath), query);
+    if(doCache) {
+        std::string url(Url::removePath(cfg.getProperty("server")));
+        people = cc.getAllCards(url, query.toStdString());
 
-        if(persons.size() > 0 ) {
+        if(people.size() > 0 ) {
             Cache cache;
             if(false == cache.createDatabase())
                 return 1;
 
-            //int numRecords = 0;
-            foreach(Person p, persons) {
+            int numRecords = 0;
+            std::cout << "Importing vcards" << std::endl;
+            foreach(Person p, people) {
                 cache.addVCard(
-                            p.FirstName.toStdWString(),
-                            p.LastName.toStdWString(),
-                            qStringList2Vector(p.Emails),
-                            p.rawCardData.toStdWString(),
-                            p.lastUpdatedAt.toStdWString()
+                            p.FirstName,
+                            p.LastName,
+                            p.Emails,
+                            p.rawCardData,
+                            p.lastUpdatedAt
                 );
+                numRecords++;
             }
 
-//            QFile file(cachefile);
-//            if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-//                int numRecords = 0;
-//                foreach(Person person, persons) {
-//                    //cout << person.rawCardData.toStdString() << endl;
-//                    file.write(person.rawCardData.toUtf8());
-//                    file.write("\n");
-//                    numRecords += 1;
-//                }
-//                file.close();
-//                cout << "Cache created (" << numRecords << " records)" << endl;
-//            } else {
-//                cout << "Failed to create locale cache in " << cachefile.toStdString() << endl;
-//            }
+            cout << "Cache created (" << numRecords << " records)" << endl;
         } else {
             cout << "Export failed, nothing found" << endl;
         }
     } else {
         if(QFile::exists(cachefile)) {
-            persons = cc.curlCache(QString::fromUtf8(argv[1]));
+            people = cc.curlCache(std::string(argv[1]));
         }
 
-        if(persons.size() == 0) {
-            persons = cc.curlCard(query);
+        if(people.size() == 0) {
+           // people = cc.curlCard(query);
         }
 
-        if(persons.size() > 0) {
+        if(people.size() > 0) {
             cout << endl; // needed by mutt
-            foreach(Person person, persons) {
-                foreach(QString email, person.Emails) {
+            foreach(Person person, people) {
+                foreach(std::string email, person.Emails) {
                     // allthough a QString is allready UTF8 we need to convert it into something a
                     // linux console can display without loosing special chars.. like german umlauts for instance
                     // I tested toUtf8().data() successfully with KDE's konsole and a simple xterm and thus it fits my needs
-                    cout << email.toUtf8().data() << "\t" << person.FirstName.toUtf8().data() << " " << person.LastName.toUtf8().data() << endl;
+                    std::cout << email << "\t" << person.FirstName.c_str() << " " << person.LastName.c_str() << std::endl;
                 }
             }
         } else {

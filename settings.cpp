@@ -1,3 +1,4 @@
+// encoding: ünicode
 /***************************************************************************
  *   Copyright (C) 2013 by Torsten Flammiger                               *
  *   github@netfg.net                                                      *
@@ -25,16 +26,16 @@ void Settings::SetApplicationProprties() {
     QCoreApplication::setOrganizationName(APPNAME);
 }
 
-void Settings::setProperty(QString key, QVariant value) {
-    cfg.setValue(key, value);
+void Settings::setProperty(std::string key, std::string &value) {
+    cfg.setValue(QString::fromStdString(key), QVariant::fromValue(QString::fromStdString(value)));
 }
 
 void Settings::sync() {
     cfg.sync();
 }
 
-QString Settings::getProperty(QString key) {
-    return cfg.value(key).toString();
+std::string Settings::getProperty(const std::string& key) {
+    return cfg.value(QString::fromStdString(key)).toString().toStdString();
 }
 
 const char* Settings::getConfigDir() {
@@ -46,9 +47,9 @@ const char* Settings::getConfigFile() {
     return cfg.fileName().toStdString().c_str();
 }
 
-const QString Settings::getCacheFile() {
+const std::string Settings::getCacheFile() {
     QDir dir = QFileInfo(cfg.fileName()).absolutePath();
-    QString s(dir.absolutePath());
-    s.append("/cache.dat");
+    std::string s(dir.absolutePath().toStdString());
+    s.append("/cache.sqlite3");
     return s;
 }

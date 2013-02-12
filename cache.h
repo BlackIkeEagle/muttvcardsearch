@@ -1,3 +1,4 @@
+// encoding: ünicode
 #ifndef CACHE_H
 #define CACHE_H
 
@@ -10,9 +11,10 @@
 #include <clocale>
 #include <locale>
 #include <vector>
+#include <fstream>
 
 #include "settings.h"
-#include "unicode.h"
+#include "person.h"
 
 class Cache
 {
@@ -22,7 +24,8 @@ public:
 
     bool openDatabase();
     bool createDatabase();
-    void addVCard(const std::wstring& fn, const std::wstring& ln, const std::vector< std::string > &emails, const std::wstring& data, const std::wstring& updatedAt);
+    std::vector<Person> findInCache(const std::string &query);
+    void addVCard(const std::string& fn, const std::string& ln, const std::vector< std::string > &emails, const std::string& data, const std::string& updatedAt);
 
 private:
     Settings cfg;
@@ -37,8 +40,9 @@ private:
 
     void addEmails(const std::vector< std::string > &emails, int rowID);
 
-    std::wstring buildDateTimeString(const std::wstring& dtString);
-    std::string toNarrow(const std::wstring& text);
+    std::string buildDateTimeString(const std::string& dtString);
+    std::string toNarrow(const std::string& text);
+    std::string toWide(const std::string& text);
 };
 
 #endif // CACHE_H

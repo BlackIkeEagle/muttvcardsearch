@@ -1,9 +1,10 @@
+// encoding: ünicode
+//
 #include "cache.h"
 
 Cache::Cache()
 {
-    cache_file = cfg.getConfigDir();
-    cache_file.append("/cache.sqlite3");
+    cache_file = cfg.getCacheFile();
     db = NULL;
 }
 
@@ -37,7 +38,7 @@ bool Cache::stepSqlite(const std::string &errMsg) {
 }
 
 bool Cache::prepSqlite(const std::string &query) {
-    int retVal = sqlite3_prepare_v2(db, query.data(), -1, &stmt, NULL);
+    int retVal = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL);
     if(SQLITE_OK != retVal) {
         std::cerr << "Failed to prepare statement: " << query << " - Message:" << sqlite3_errstr(retVal) << std::endl;
         return false;
@@ -46,8 +47,47 @@ bool Cache::prepSqlite(const std::string &query) {
     return true;
 }
 
-std::wstring Cache::buildDateTimeString(const std::wstring &dtString) {
-    std::wstring result = dtString;
+std::vector<Person> Cache::findInCache(const std::string &query) {
+    std::vector< Person > result;
+
+    if(false == openDatabase())
+        return result;
+
+    prepSqlite(query);
+
+    bool done = false;
+    while(!done) {
+        switch ( sqlite3_step( stmt ) ) {
+        case SQLITE_ROW:
+            {
+                //std::string fn((const wchar_t*)sqlite3_column_text(stmt, 0));
+                std::string fn    = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
+                std::string ln    = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
+                std::string email = std::string(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
+
+                Person p;
+                p.LastName = ln;
+                p.FirstName = fn;
+                p.Emails.push_back(email);
+
+                result.push_back(p);
+            }
+            break;
+        case SQLITE_DONE:
+            done = true;
+            break;
+        default:
+            throw("Unable to execute query");
+            break;
+        }
+    }
+
+    finalizeSqlite();
+    return result;
+}
+
+std::string Cache::buildDateTimeString(const std::string &dtString) {
+    std::string result = dtString;
     int pos = result.find('+');
 
     if(pos > 0) {
@@ -55,19 +95,19 @@ std::wstring Cache::buildDateTimeString(const std::wstring &dtString) {
     }
 
     pos = result.find('T');
-    std::wstring date = result.substr(0, pos);
-    std::wstring time = result.substr(pos+1);
+    std::string date = result.substr(0, pos);
+    std::string time = result.substr(pos+1);
 
     if(date.length() != 10) {
         // hmm, invalid! what to to?
-        date = L"1971-01-01";
+        date = "1971-01-01";
     }
 
     if(time.length() != 8) {
-        time = L"00:00:00";
+        time = "00:00:00";
     }
 
-    result = date + L"T" + time;
+    result = date + "T" + time;
     return result;
 }
 
@@ -98,28 +138,6 @@ bool Cache::openDatabase() {
     return true;
 }
 
-// see http://stackoverflow.com/questions/4804298/c-how-to-convert-wstring-into-string
-std::string Cache::toNarrow(const std::wstring& text)
-{
-    std::setlocale(LC_ALL, "");
-    const std::locale locale("");
-    typedef std::codecvt<wchar_t, char, std::mbstate_t> converter_type;
-    const converter_type& converter = std::use_facet<converter_type>(locale);
-
-    std::vector<char> to(text.length() * converter.max_length());
-
-    std::mbstate_t state;
-    const wchar_t* from_next;
-    char* to_next;
-    const converter_type::result result = converter.out(state, text.data(), text.data() + text.length(), from_next, &to[0], &to[0] + to.size(), to_next);
-    if (result == converter_type::ok or result == converter_type::noconv) {
-        const std::string s(&to[0], to_next);
-        return s;
-    }
-
-    return "";
-}
-
 void Cache::addEmails(const std::vector<std::string> &emails, int rowID) {
     for(unsigned int i=0; i<emails.size(); i++) {
         std::string email = emails.at(i);
@@ -135,7 +153,7 @@ void Cache::addEmails(const std::vector<std::string> &emails, int rowID) {
     }
 }
 
-void Cache::addVCard(const std::wstring &fn, const std::wstring &ln, const std::vector< std::string > &emails, const std::wstring &data, const std::wstring &updatedAt) {
+void Cache::addVCard(const std::string &fn, const std::string &ln, const std::vector< std::string > &emails, const std::string &data, const std::string &updatedAt) {
     if(fn.length() == 0) {
         std::cerr << "Firstname is empty!" << std::endl;
         return;
@@ -161,15 +179,14 @@ void Cache::addVCard(const std::wstring &fn, const std::wstring &ln, const std::
         return;
     }
 
-    std::wstring dt = buildDateTimeString(updatedAt);
-    std::wstringstream ss;
+    std::string dt = buildDateTimeString(updatedAt);
+    std::stringstream ss;
 
     // happy sql injecting ;)
     ss << "insert into vcards (FirstName, LastName, VCard, UpdatedAt) values (";
     ss << "'" << fn << "','" << ln << "','" << data << "','" << dt << "')";
-    std::string query = toNarrow(ss.str());
 
-    bool b = prepSqlite(query);
+    bool b = prepSqlite(ss.str());
     if(b) {
         b = stepSqlite("Failed to add new record to cache database");
         if(b) {
@@ -183,12 +200,17 @@ void Cache::addVCard(const std::wstring &fn, const std::wstring &ln, const std::
 
 bool Cache::createDatabase() {
 
-    // stdio standard function
-    if( remove (cache_file.c_str()) == 0 ) {
-        std::cout << "Old cache database removed" << std::endl;
-    } else {
-        std::cerr << "Failed to remove old cache database" << std::endl;
-        return false;
+    // test if file exists
+    std::ifstream file(cache_file.c_str());
+    if(file) {
+        file.close();
+        // stdio standard function
+        if( remove (cache_file.c_str() ) == 0 ) {
+            std::wcout << "Old cache database removed" << std::endl;
+        } else {
+            std::cerr << L"Failed to remove old cache database" << std::endl;
+            return false;
+        }
     }
 
     if(false == initSqlite())
