@@ -32,13 +32,9 @@ using namespace std;
 #include <fcntl.h>
 #include <vector>
 
-#include <QString>
-#include <QStringList>
-#include <QTextStream>
 #include <vcard/vcard.h>
 #include "person.h"
 #include "settings.h"
-#include "encoding.h"
 #include "stringutils.h"
 
 class CardCurler
@@ -83,13 +79,12 @@ private:
     std::string _password;
     std::string _rawQuery;
 
-    QString getVCards(const QStringList& urls);
     std::string get(const std::string& requestType, const std::string &query = std::string());
     std::vector< std::string > getvCardURLs(const std::string &query);
-    void fixHtml(QString* data);
+    void fixHtml(string &data);
     void init_vcard(struct vcdata *vc);
     void createPerson(const vCard *vcdata, Person *p);
-    bool listContainsQuery(const QStringList *list, const QString &query);
+    bool listContainsQuery(const std::vector<std::string> *list, const std::string &query);
     static size_t writefunc(void *ptr, size_t size, size_t nmemb, struct vcdata *vc);
     static size_t readfunc(void *ptr, size_t size, size_t nmemb, void *stream);
     static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp);

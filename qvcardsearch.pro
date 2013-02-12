@@ -37,7 +37,6 @@ SOURCES += main.cpp \
     settings.cpp \
     option.cpp \
     cache.cpp \
-    encoding.cpp \
     url.cpp \
     stringutils.cpp \
     fileutils.cpp
@@ -51,7 +50,6 @@ HEADERS += \
     option.h \
     version.h \
     cache.h \
-    encoding.h \
     url.h \
     stringutils.h \
     fileutils.h

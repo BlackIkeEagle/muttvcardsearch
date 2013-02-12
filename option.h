@@ -22,8 +22,10 @@
 #ifndef OPTION_H
 #define OPTION_H
 
+// fixme and remove these two!
 #include <QString>
 #include <QStringList>
+
 #include <stdlib.h>
 
 class Option
