@@ -55,15 +55,15 @@ std::vector<std::string> CardCurler::getvCardURLs(const std::string &query) {
     }
 
     std::vector<std::string> result;
-    std::vector<std::string> tokens = StringUtils::split(s, href_begin);
+    std::vector<std::string> tokens = MVCS::StringUtils::split(s, href_begin);
 
     if(tokens.size() >= 1) {
         for(unsigned int i=1; i<tokens.size(); i++) {
-            std::vector<std::string> inner = StringUtils::split(tokens.at(i), href_end);;
+            std::vector<std::string> inner = MVCS::StringUtils::split(tokens.at(i), href_end);;
             if(inner.size() >= 1) {
                 std::string url = inner.at(0);
 
-                if(StringUtils::endsWith(url, "vcf")) {
+                if(MVCS::StringUtils::endsWith(url, "vcf")) {
                     result.push_back(url);
                 }
             }
@@ -234,13 +234,13 @@ void CardCurler::createPerson(const vCard *vcdata, Person *p) {
             std::vector<std::string> emails = p->Emails;
             if(emails.size() > 1) {
                 int counter = 0;
-//                foreach(std::string email, emails) {
-//                    unsigned int match = email.find(_rawQuery );
-//                    if( match != std::string::npos ) {
-//                        p->Emails.erase(p->Emails.begin() + counter);
-//                    }
-//                    counter++;
-//                }
+                foreach(std::string email, emails) {
+                    unsigned long match = email.find(_rawQuery );
+                    if( match != std::string::npos ) {
+                        p->Emails.erase(p->Emails.begin() + counter);
+                    }
+                    counter++;
+                }
             }
         }
     }

@@ -1,4 +1,3 @@
-// encoding: ünicode
 /***************************************************************************
  *   Copyright (C) 2013 by Torsten Flammiger                               *
  *   github@netfg.net                                                      *
@@ -36,7 +35,6 @@ using namespace std;
 #include <QString>
 #include <QStringList>
 #include <QTextStream>
-#include <QDir>
 #include <vcard/vcard.h>
 #include "person.h"
 #include "settings.h"

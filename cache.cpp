@@ -1,5 +1,3 @@
-// encoding: ünicode
-//
 #include "cache.h"
 
 Cache::Cache()
@@ -201,14 +199,12 @@ void Cache::addVCard(const std::string &fn, const std::string &ln, const std::ve
 bool Cache::createDatabase() {
 
     // test if file exists
-    std::ifstream file(cache_file.c_str());
-    if(file) {
-        file.close();
+    if(FileUtils::fileExists(cache_file)) {
         // stdio standard function
-        if( remove (cache_file.c_str() ) == 0 ) {
-            std::wcout << "Old cache database removed" << std::endl;
+        if( FileUtils::fileRemove(cache_file) ) {
+            std::cout << "Old cache database removed" << std::endl;
         } else {
-            std::cerr << L"Failed to remove old cache database" << std::endl;
+            std::cerr << "Failed to remove old cache database '" << cache_file << "'" << std::endl;
             return false;
         }
     }

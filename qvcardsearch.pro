@@ -39,7 +39,8 @@ SOURCES += main.cpp \
     cache.cpp \
     encoding.cpp \
     url.cpp \
-    stringutils.cpp
+    stringutils.cpp \
+    fileutils.cpp
 
 LIBS += -lcurl -lvcard -lsqlite3
 
@@ -52,7 +53,8 @@ HEADERS += \
     cache.h \
     encoding.h \
     url.h \
-    stringutils.h
+    stringutils.h \
+    fileutils.h
 
 RESOURCES += \
     carddavquery.qrc

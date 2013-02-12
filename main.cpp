@@ -19,7 +19,6 @@
  ***************************************************************************/
 
 #include <vector>
-#include <QFile>
 #include <sys/stat.h>
 #include <vcard/vcard.h>
 #include "option.h"
@@ -28,6 +27,7 @@
 #include "version.h"
 #include "url.h"
 #include "cache.h"
+#include "fileutils.h"
 
 void printError(QString detail) {
     cout << detail.toStdString() << endl << endl;
@@ -144,13 +144,13 @@ int main(int argc, char *argv[])
     CardCurler cc(cfg.getProperty("username"), cfg.getProperty("password"), cfg.getProperty("server"), argv[1]);
 
     // there is the cache ;)
-    QString cachefile = QString::fromStdString(cfg.getCacheFile());
+    std::string cachefile = cfg.getCacheFile();
 
     if(false == doCache) {
         //query = query.arg(argv[1]).arg(argv[1]);
     } else {
-        if(QFile::exists(cachefile)) {
-            if(QFile::remove(cachefile)) {
+        if(FileUtils::fileExists(cachefile)) {
+            if(FileUtils::fileRemove(cachefile)) {
                 cout << "Old cache deleted" << endl;
             }
         }
@@ -185,7 +185,7 @@ int main(int argc, char *argv[])
             cout << "Export failed, nothing found" << endl;
         }
     } else {
-        if(QFile::exists(cachefile)) {
+        if(FileUtils::fileExists(cachefile)) {
             people = cc.curlCache(std::string(argv[1]));
         }
 
@@ -197,9 +197,6 @@ int main(int argc, char *argv[])
             cout << endl; // needed by mutt
             foreach(Person person, people) {
                 foreach(std::string email, person.Emails) {
-                    // allthough a QString is allready UTF8 we need to convert it into something a
-                    // linux console can display without loosing special chars.. like german umlauts for instance
-                    // I tested toUtf8().data() successfully with KDE's konsole and a simple xterm and thus it fits my needs
                     std::cout << email << "\t" << person.FirstName.c_str() << " " << person.LastName.c_str() << std::endl;
                 }
             }

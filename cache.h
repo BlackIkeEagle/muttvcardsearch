@@ -1,4 +1,3 @@
-// encoding: ünicode
 #ifndef CACHE_H
 #define CACHE_H
 
@@ -15,6 +14,7 @@
 
 #include "settings.h"
 #include "person.h"
+#include "fileutils.h"
 
 class Cache
 {

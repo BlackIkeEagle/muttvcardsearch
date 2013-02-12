@@ -1,6 +1,6 @@
 #include "stringutils.h"
 
-vector<string> StringUtils::split(const string &s, const string &token)
+vector<string> MVCS::StringUtils::split(const string &s, const string &token)
 {
     vector<string> result;
     int tokenLength = token.length();
@@ -30,15 +30,17 @@ vector<string> StringUtils::split(const string &s, const string &token)
     return result;
 }
 
-bool StringUtils::endsWith(const string &text, const string &suffix) {
+bool MVCS::StringUtils::endsWith(const string &text, const string &suffix) {
     if( text.length() == 0 || suffix.length() == 0 )
         return false;
 
-    string tmp = text.substr(text.length()-suffix.length());
-    if(tmp.length() != suffix.length()) return false;
-
+    string tmp = text.substr(text.length() - suffix.length());
     std::transform(tmp.begin(), tmp.end(), tmp.begin(), ::tolower);
 
     if(tmp == suffix) return true;
     return false;
+}
+
+void MVCS::StringUtils::replace(string &text, const string &from, const string &to) {
+
 }
