@@ -34,6 +34,9 @@ bool MVCS::StringUtils::endsWith(const string &text, string suffix) {
     if( text.length() == 0 || suffix.length() == 0 )
         return false;
 
+    if( suffix.length() > text.length() )
+        return false;
+
     string tmp = text.substr(text.length() - suffix.length());
 
     // transform both to lowercase for testing, and thus, ignores case
