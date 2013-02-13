@@ -7,6 +7,7 @@ INSTALL
 ------------
 first, install
 * libcurl (installed by default on many linux and/or BSD distributions)
+* sqlite3
 * libvcard
 * QT (requiered by libvcard)
 
