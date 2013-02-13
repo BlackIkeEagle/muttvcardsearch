@@ -1,4 +1,3 @@
-// encoding: ünicode
 /***************************************************************************
  *   Copyright (C) 2013 by Torsten Flammiger                               *
  *   github@netfg.net                                                      *
@@ -25,6 +24,6 @@
 // update the .pro file too if you change APPNAME
 #define APPNAME "muttvcardsearch"
 #define MAJOR 1
-#define MINOR 0
+#define MINOR 1
 
 #endif // VERSION_H

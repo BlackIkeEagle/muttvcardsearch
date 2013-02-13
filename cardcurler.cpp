@@ -1,4 +1,3 @@
-// encoding: ünicode
 /***************************************************************************
  *   Copyright (C) 2013 by Torsten Flammiger                               *
  *   github@netfg.net                                                      *
@@ -34,6 +33,7 @@ CardCurler::CardCurler(const std::string &username, const std::string &password,
     _rawQuery = rawQuery;
 
     exportMode = false;
+    isSOGO = false;
 }
 
 /*
@@ -52,6 +52,7 @@ std::vector<std::string> CardCurler::getvCardURLs(const std::string &query) {
     if( s.find("D:href", 0) != std::string::npos ) {
         href_begin = "<D:href>";
         href_end   = "</D:href>";
+        isSOGO = true;
     }
 
     std::vector<std::string> result;
@@ -139,7 +140,6 @@ std::vector<Person> CardCurler::getAllCards(const std::string &server, const std
 
             // get the result and reset the chunk
             if(chunk.memory) {
-                //std::string card(chunk.memory);
                 std::string card(chunk.memory);
 
                 free(chunk.memory);
@@ -354,7 +354,7 @@ std::vector<Person> CardCurler::curlCard(const std::string &query) {
     std::string vcardAddressBeginToken = "<card:address-data>"; // defaults to Owncloud
     std::string vcardAddressEndToken = "</card:address-data>";
 
-    if(http_result.find("<C:address-data>")) {
+    if(http_result.find("<C:address-data>") != std::string::npos) {
         vcardAddressBeginToken = "<C:address-data>";
         vcardAddressEndToken   = "</C:address-data>";
     }
@@ -372,7 +372,11 @@ std::vector<Person> CardCurler::curlCard(const std::string &query) {
             if(_list.size() == 2) {
 
                 std::string s = _list.at(0);
-                fixHtml(s);
+                MVCS::StringUtils::replace(&s, "&#13;", "");
+
+                if(isSOGO)
+                    fixHtml(&s);
+
                 QList<vCard> vcards = vCard::fromByteArray(QString::fromStdString(s).toUtf8());
 
                 if(!vcards.isEmpty()) {
@@ -402,109 +406,111 @@ std::vector<Person> CardCurler::curlCard(const std::string &query) {
  * This nice method tries to replace all html entities by its real char
  * It will fail sometime! - or from time to time ;)
  */
-void CardCurler::fixHtml(string& data) {
+void CardCurler::fixHtml(string* data) {
     MVCS::StringUtils::replace(data, "&#13;", "");
     MVCS::StringUtils::replace(data, "&#34;", "\"");
     MVCS::StringUtils::replace(data, "&#38;", "&");
     MVCS::StringUtils::replace(data, "&#60;", "<");
 
-//    *data = data->replace("&#62;", ">");
-//    *data = data->replace("&#160;", " ");
-//    *data = data->replace("&#161;", "¡");
-//    *data = data->replace("&#162;", "¢");
-//    *data = data->replace("&#163;", "£");
-//    *data = data->replace("&#164;", "¤");
-//    *data = data->replace("&#165;", "¥");
-//    *data = data->replace("&#166;", "¦");
-//    *data = data->replace("&#167;", "§");
-//    *data = data->replace("&#168;", "¨");
-//    *data = data->replace("&#169;", "©");
-//    *data = data->replace("&#170;", "ª");
-//    *data = data->replace("&#171;", "«");
-//    *data = data->replace("&#172;", "¬");
-//    *data = data->replace("&#173;", "");
-//    *data = data->replace("&#174;", "®");
-//    *data = data->replace("&#175;", "¯");
-//    *data = data->replace("&#176;", "°");
-//    *data = data->replace("&#177;", "±");
-//    *data = data->replace("&#178;", "²");
-//    *data = data->replace("&#179;", "³");
-//    *data = data->replace("&#180;", "´");
-//    *data = data->replace("&#181;", "µ");
-//    *data = data->replace("&#182;", "¶");
-//    *data = data->replace("&#183;", "·");
-//    *data = data->replace("&#184;", "¸");
-//    *data = data->replace("&#185;", "¹");
-//    *data = data->replace("&#186;", "º");
-//    *data = data->replace("&#187;", "»");
-//    *data = data->replace("&#188;", "¼");
-//    *data = data->replace("&#189;", "½");
-//    *data = data->replace("&#190;", "¾");
-//    *data = data->replace("&#191;", "¿");
-//    *data = data->replace("&#192;", "À");
-//    *data = data->replace("&#193;", "Á");
-//    *data = data->replace("&#194;", "Â");
-//    *data = data->replace("&#195;", "Ã");
-//    *data = data->replace("&#196;", "Ä");
-//    *data = data->replace("&#197;", "Å");
-//    *data = data->replace("&#198;", "Æ");
-//    *data = data->replace("&#199;", "Ç");
-//    *data = data->replace("&#200;", "È");
-//    *data = data->replace("&#201;", "É");
-//    *data = data->replace("&#202;", "Ê");
-//    *data = data->replace("&#203;", "Ë");
-//    *data = data->replace("&#204;", "Ì");
-//    *data = data->replace("&#205;", "Í");
-//    *data = data->replace("&#206;", "Î");
-//    *data = data->replace("&#207;", "Ï");
-//    *data = data->replace("&#208;", "Ð");
-//    *data = data->replace("&#209;", "Ñ");
-//    *data = data->replace("&#210;", "Ò");
-//    *data = data->replace("&#211;", "Ó");
-//    *data = data->replace("&#212;", "Ô");
-//    *data = data->replace("&#213;", "Õ");
-//    *data = data->replace("&#214;", "Ö");
-//    *data = data->replace("&#215;", "×");
-//    *data = data->replace("&#216;", "Ø");
-//    *data = data->replace("&#217;", "Ù");
-//    *data = data->replace("&#218;", "Ú");
-//    *data = data->replace("&#219;", "Û");
-//    *data = data->replace("&#220;", "Ü");
-//    *data = data->replace("&#221;", "Ý");
-//    *data = data->replace("&#222;", "Þ");
-//    *data = data->replace("&#223;", "ß");
-//    *data = data->replace("&#224;", "à");
-//    *data = data->replace("&#225;", "á");
-//    *data = data->replace("&#226;", "â");
-//    *data = data->replace("&#227;", "ã");
-//    *data = data->replace("&#228;", "ä");
-//    *data = data->replace("&#229;", "å");
-//    *data = data->replace("&#230;", "æ");
-//    *data = data->replace("&#231;", "ç");
-//    *data = data->replace("&#232;", "è");
-//    *data = data->replace("&#233;", "é");
-//    *data = data->replace("&#234;", "ê");
-//    *data = data->replace("&#235;", "ë");
-//    *data = data->replace("&#236;", "ì");
-//    *data = data->replace("&#237;", "í");
-//    *data = data->replace("&#238;", "î");
-//    *data = data->replace("&#239;", "ï");
-//    *data = data->replace("&#240;", "ð");
-//    *data = data->replace("&#241;", "ñ");
-//    *data = data->replace("&#242;", "ò");
-//    *data = data->replace("&#243;", "ó");
-//    *data = data->replace("&#244;", "ô");
-//    *data = data->replace("&#245;", "õ");
-//    *data = data->replace("&#246;", "ö");
-//    *data = data->replace("&#247;", "÷");
-//    *data = data->replace("&#248;", "ø");
-//    *data = data->replace("&#249;", "ù");
-//    *data = data->replace("&#250;", "ú");
-//    *data = data->replace("&#251;", "û");
-//    *data = data->replace("&#252;", "ü");
-//    *data = data->replace("&#253;", "ý");
-//    *data = data->replace("&#254;", "þ");
-//    *data = data->replace("&#255;", "ÿ");
+    MVCS::StringUtils::replace(data, "&#62;", ">");
+    MVCS::StringUtils::replace(data, "&#160;", " ");
+    MVCS::StringUtils::replace(data, "&#161;", "¡");
+    MVCS::StringUtils::replace(data, "&#162;", "¢");
+
+    MVCS::StringUtils::replace(data, "&#163;", "£");
+    MVCS::StringUtils::replace(data, "&#164;", "¤");
+    MVCS::StringUtils::replace(data, "&#165;", "¥");
+    MVCS::StringUtils::replace(data, "&#166;", "¦");
+
+    MVCS::StringUtils::replace(data, "&#167;", "§");
+    MVCS::StringUtils::replace(data, "&#168;", "¨");
+    MVCS::StringUtils::replace(data, "&#169;", "©");
+    MVCS::StringUtils::replace(data, "&#170;", "ª");
+    MVCS::StringUtils::replace(data, "&#171;", "«");
+    MVCS::StringUtils::replace(data, "&#172;", "¬");
+    MVCS::StringUtils::replace(data, "&#173;", "");
+    MVCS::StringUtils::replace(data, "&#174;", "®");
+    MVCS::StringUtils::replace(data, "&#175;", "¯");
+    MVCS::StringUtils::replace(data, "&#176;", "°");
+    MVCS::StringUtils::replace(data, "&#177;", "±");
+    MVCS::StringUtils::replace(data, "&#178;", "²");
+    MVCS::StringUtils::replace(data, "&#179;", "³");
+    MVCS::StringUtils::replace(data, "&#180;", "´");
+    MVCS::StringUtils::replace(data, "&#181;", "µ");
+    MVCS::StringUtils::replace(data, "&#182;", "¶");
+    MVCS::StringUtils::replace(data, "&#183;", "·");
+    MVCS::StringUtils::replace(data, "&#184;", "¸");
+    MVCS::StringUtils::replace(data, "&#185;", "¹");
+    MVCS::StringUtils::replace(data, "&#186;", "º");
+    MVCS::StringUtils::replace(data, "&#187;", "»");
+    MVCS::StringUtils::replace(data, "&#188;", "¼");
+    MVCS::StringUtils::replace(data, "&#189;", "½");
+    MVCS::StringUtils::replace(data, "&#190;", "¾");
+    MVCS::StringUtils::replace(data, "&#191;", "¿");
+    MVCS::StringUtils::replace(data, "&#192;", "À");
+    MVCS::StringUtils::replace(data, "&#193;", "Á");
+    MVCS::StringUtils::replace(data, "&#194;", "Â");
+    MVCS::StringUtils::replace(data, "&#195;", "Ã");
+    MVCS::StringUtils::replace(data, "&#196;", "Ä");
+    MVCS::StringUtils::replace(data, "&#197;", "Å");
+    MVCS::StringUtils::replace(data, "&#198;", "Æ");
+    MVCS::StringUtils::replace(data, "&#199;", "Ç");
+    MVCS::StringUtils::replace(data, "&#200;", "È");
+    MVCS::StringUtils::replace(data, "&#201;", "É");
+    MVCS::StringUtils::replace(data, "&#202;", "Ê");
+    MVCS::StringUtils::replace(data, "&#203;", "Ë");
+    MVCS::StringUtils::replace(data, "&#204;", "Ì");
+    MVCS::StringUtils::replace(data, "&#205;", "Í");
+    MVCS::StringUtils::replace(data, "&#206;", "Î");
+    MVCS::StringUtils::replace(data, "&#207;", "Ï");
+    MVCS::StringUtils::replace(data, "&#208;", "Ð");
+    MVCS::StringUtils::replace(data, "&#209;", "Ñ");
+    MVCS::StringUtils::replace(data, "&#210;", "Ò");
+    MVCS::StringUtils::replace(data, "&#211;", "Ó");
+    MVCS::StringUtils::replace(data, "&#212;", "Ô");
+    MVCS::StringUtils::replace(data, "&#213;", "Õ");
+    MVCS::StringUtils::replace(data, "&#214;", "Ö");
+    MVCS::StringUtils::replace(data, "&#215;", "×");
+    MVCS::StringUtils::replace(data, "&#216;", "Ø");
+    MVCS::StringUtils::replace(data, "&#217;", "Ù");
+    MVCS::StringUtils::replace(data, "&#218;", "Ú");
+    MVCS::StringUtils::replace(data, "&#219;", "Û");
+    MVCS::StringUtils::replace(data, "&#220;", "Ü");
+    MVCS::StringUtils::replace(data, "&#221;", "Ý");
+    MVCS::StringUtils::replace(data, "&#222;", "Þ");
+    MVCS::StringUtils::replace(data, "&#223;", "ß");
+    MVCS::StringUtils::replace(data, "&#224;", "à");
+    MVCS::StringUtils::replace(data, "&#225;", "á");
+    MVCS::StringUtils::replace(data, "&#226;", "â");
+    MVCS::StringUtils::replace(data, "&#227;", "ã");
+    MVCS::StringUtils::replace(data, "&#228;", "ä");
+    MVCS::StringUtils::replace(data, "&#229;", "å");
+    MVCS::StringUtils::replace(data, "&#230;", "æ");
+    MVCS::StringUtils::replace(data, "&#231;", "ç");
+    MVCS::StringUtils::replace(data, "&#232;", "è");
+    MVCS::StringUtils::replace(data, "&#233;", "é");
+    MVCS::StringUtils::replace(data, "&#234;", "ê");
+    MVCS::StringUtils::replace(data, "&#235;", "ë");
+    MVCS::StringUtils::replace(data, "&#236;", "ì");
+    MVCS::StringUtils::replace(data, "&#237;", "í");
+    MVCS::StringUtils::replace(data, "&#238;", "î");
+    MVCS::StringUtils::replace(data, "&#239;", "ï");
+    MVCS::StringUtils::replace(data, "&#240;", "ð");
+    MVCS::StringUtils::replace(data, "&#241;", "ñ");
+    MVCS::StringUtils::replace(data, "&#242;", "ò");
+    MVCS::StringUtils::replace(data, "&#243;", "ó");
+    MVCS::StringUtils::replace(data, "&#244;", "ô");
+    MVCS::StringUtils::replace(data, "&#245;", "õ");
+    MVCS::StringUtils::replace(data, "&#246;", "ö");
+    MVCS::StringUtils::replace(data, "&#247;", "÷");
+    MVCS::StringUtils::replace(data, "&#248;", "ø");
+    MVCS::StringUtils::replace(data, "&#249;", "ù");
+    MVCS::StringUtils::replace(data, "&#250;", "ú");
+    MVCS::StringUtils::replace(data, "&#251;", "û");
+    MVCS::StringUtils::replace(data, "&#252;", "ü");
+    MVCS::StringUtils::replace(data, "&#253;", "ý");
+    MVCS::StringUtils::replace(data, "&#254;", "þ");
+    MVCS::StringUtils::replace(data, "&#255;", "ÿ");;
 }
 
 void CardCurler::init_vcard(vcdata *vc) {

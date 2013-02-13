@@ -1,3 +1,23 @@
+/***************************************************************************
+ *   Copyright (C) 2013 by Torsten Flammiger                               *
+ *   github@netfg.net                                                      *
+ *                                                                         *
+ *   This program is free software; you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation; either version 2 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ *   This program is distributed in the hope that it will be useful,       *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+ *   GNU General Public License for more details.                          *
+ *                                                                         *
+ *   You should have received a copy of the GNU General Public License     *
+ *   along with this program; if not, write to the                         *
+ *   Free Software Foundation, Inc.,                                       *
+ *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
+ ***************************************************************************/
+
 #include "stringutils.h"
 
 vector<string> MVCS::StringUtils::split(const string &s, const string &token)
@@ -25,6 +45,11 @@ vector<string> MVCS::StringUtils::split(const string &s, const string &token)
 
         tmp = tmp.substr(pos + token.length()); // fast forward to skip the token itself
         pos = tmp.find(token, 0);
+
+        // only one match found?
+        if(pos == std::string::npos) {
+            result.push_back(tmp);
+        }
     }
 
     return result;
@@ -60,6 +85,12 @@ bool MVCS::StringUtils::contains(const string &text, const string& pattern) {
     return false;
 }
 
-void MVCS::StringUtils::replace(string &text, const string &from, const string &to) {
+void MVCS::StringUtils::replace(string *text, const string &from, const string &to) {
+    unsigned long pos = text->find(from);
 
+    // text contains something to replace
+    while(pos != std::string::npos) {
+        *text = text->replace(pos, from.length(), to);
+        pos = text->find(from);
+    }
 }

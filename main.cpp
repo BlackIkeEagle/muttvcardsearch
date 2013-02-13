@@ -190,7 +190,9 @@ int main(int argc, char *argv[])
         }
 
         if(people.size() == 0) {
-           // people = cc.curlCard(query);
+           QString s(QString::fromStdString(argv[1]));
+           query = query.arg(s).arg(s);
+           people = cc.curlCard(query.toStdString());
         }
 
         if(people.size() > 0) {

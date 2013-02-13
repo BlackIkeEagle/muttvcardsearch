@@ -74,6 +74,9 @@ private:
     // use _rawQuery to remove unwanted emails
     bool exportMode;
 
+    // indicates SOGO if TRUE
+    bool isSOGO;
+
     std::string _url;
     std::string _username;
     std::string _password;
@@ -81,7 +84,7 @@ private:
 
     std::string get(const std::string& requestType, const std::string &query = std::string());
     std::vector< std::string > getvCardURLs(const std::string &query);
-    void fixHtml(string &data);
+    void fixHtml(string *data);
     void init_vcard(struct vcdata *vc);
     void createPerson(const vCard *vcdata, Person *p);
     bool listContainsQuery(const std::vector<std::string> *list, const std::string &query);
