@@ -27,7 +27,6 @@ and if your query does not return any data it will search the server.
 
 TODO
 ------------
-* change cache from a simple file to a sqlite database
 * add option to refresh the cache instead of redownload it every time you made a change on your server
 * add option to save a contact into your vcard store (just like abook)
 * remove libvcard to get rid of QT
