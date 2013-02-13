@@ -145,20 +145,15 @@ int main(int argc, char *argv[])
 
     // there is the cache ;)
     std::string cachefile = cfg.getCacheFile();
+    std::vector<Person> people;
 
-    if(false == doCache) {
-        //query = query.arg(argv[1]).arg(argv[1]);
-    } else {
+    if(true == doCache) {
         if(FileUtils::fileExists(cachefile)) {
             if(FileUtils::fileRemove(cachefile)) {
                 cout << "Old cache deleted" << endl;
             }
         }
-    }
 
-    std::vector<Person> people;
-
-    if(doCache) {
         std::string url(Url::removePath(cfg.getProperty("server")));
         people = cc.getAllCards(url, query.toStdString());
 
