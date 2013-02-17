@@ -42,3 +42,17 @@ bool FileUtils::fileRemove(const string &file) {
 
     return true;
 }
+
+std::string FileUtils::getFileContent(const string &path) {
+    std::ifstream s(path.c_str());
+    std::stringstream buffer;
+    buffer << s.rdbuf();
+    s.close();
+    return buffer.str();
+}
+
+std::string FileUtils::getHomeDir() {
+    struct passwd *pw = getpwuid(getuid());
+    std::string d(pw->pw_dir);
+    return d;
+}

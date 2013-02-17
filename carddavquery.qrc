@@ -1,6 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>cardsearch.xml</file>
-        <file>carddavexport.xml</file>
-    </qresource>
-</RCC>

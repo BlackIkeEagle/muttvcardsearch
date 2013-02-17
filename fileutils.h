@@ -23,7 +23,13 @@
 
 #include <string>
 #include <fstream>
+#include <sstream>
 #include <stdio.h>
+
+// for getHomeDir()
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 using namespace std;
 
@@ -33,6 +39,8 @@ public:
     FileUtils();
     static bool fileExists(const std::string& file);
     static bool fileRemove(const std::string& file);
+    static std::string getFileContent(const std::string& path);
+    static std::string getHomeDir();
 };
 
 #endif // FILEUTILS_H

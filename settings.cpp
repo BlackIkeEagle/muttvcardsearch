@@ -37,13 +37,13 @@ std::string Settings::getProperty(const std::string& key) {
     return cfg.value(QString::fromStdString(key)).toString().toStdString();
 }
 
-const char* Settings::getConfigDir() {
-    QDir dir = QFileInfo(cfg.fileName()).absolutePath();
-    return dir.absolutePath().toStdString().c_str();
+const std::string Settings::getConfigDir() {
+    std::string s = CONFIG_DIR;
+    return s;
 }
 
-const char* Settings::getConfigFile() {
-    return cfg.fileName().toStdString().c_str();
+const std::string Settings::getConfigFile() {
+    return cfg.fileName().toStdString();
 }
 
 const std::string Settings::getCacheFile() {

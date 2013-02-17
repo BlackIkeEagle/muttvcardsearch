@@ -28,6 +28,7 @@
 #include "url.h"
 #include "cache.h"
 #include "fileutils.h"
+#include "searchtemplates.h"
 
 void printError(QString detail) {
     cout << detail.toStdString() << endl << endl;
@@ -64,15 +65,6 @@ void printError(QString detail) {
     cout << "NOTE: your password will not be encrypted! Therefore a chmod go-rwx on ~/.config/" << APPNAME << endl;
     cout << "      will be executed everytime you configure the application" << endl;
     cout << endl;
-}
-
-std::vector<std::string> qStringList2Vector(const QStringList& list) {
-    std::vector<std::string> result;
-    foreach(QString s, list) {
-        result.push_back(s.toStdString());
-    }
-
-    return result;
 }
 
 int main(int argc, char *argv[])
@@ -115,8 +107,8 @@ int main(int argc, char *argv[])
         cfg.sync();
 
         // chmod go-a to the config file, ignore the results
-        chmod(cfg.getConfigDir(), S_IRUSR | S_IWUSR | S_IXUSR);
-        chmod(cfg.getConfigFile(), S_IRUSR | S_IWUSR);
+        chmod(cfg.getConfigDir().c_str(), S_IRUSR | S_IWUSR | S_IXUSR);
+        chmod(cfg.getConfigFile().c_str(), S_IRUSR | S_IWUSR);
 
         return 0;
     } else if ( argc != 2) {
@@ -124,20 +116,31 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    // contains default search template strings for searching and exporting vcards
+    SearchTemplates st;
+
     // preset search template
     bool doCache = false;
 
-    QString searchTemplate(":/cardsearch.xml");
+    std::string query = st.getSearchTemplate();
     if(opt.hasOption("--create-local-cache")) {
-        searchTemplate = ":/carddavexport.xml";
-        doCache = true;
-    }
+        query = st.getExportTemplate();
 
-    // open the search template file from the executable resource
-    QFile input(searchTemplate);
-    input.open(QIODevice::ReadOnly);
-    QString query(input.readAll());
-    input.close();
+        // overwrite the default export template with one the user provided
+        std::string templateFile = FileUtils::getHomeDir() + "/" + cfg.getConfigDir() + "/export.xml";
+        if(FileUtils::fileExists(templateFile)) {
+            query = FileUtils::getFileContent(templateFile);
+        }
+
+        doCache = true;
+
+    } else {
+        // overwrite the default search template with one the user provided
+        std::string templateFile = FileUtils::getHomeDir() + "/" + cfg.getConfigDir() + "/search.xml";
+        if(FileUtils::fileExists(templateFile)) {
+            query = FileUtils::getFileContent(templateFile);
+        }
+    }
 
     // The worker. will read from your owncloud server as well as from your local cache.
     // In the future, it will most probably also write to your owncloud ;)
@@ -151,11 +154,14 @@ int main(int argc, char *argv[])
         if(FileUtils::fileExists(cachefile)) {
             if(FileUtils::fileRemove(cachefile)) {
                 cout << "Old cache deleted" << endl;
+            } else {
+                cerr << "Failed to remove old cache database: " << cachefile << endl;
+                return 1;
             }
         }
 
         std::string url(Url::removePath(cfg.getProperty("server")));
-        people = cc.getAllCards(url, query.toStdString());
+        people = cc.getAllCards(url, query);
 
         if(people.size() > 0 ) {
             Cache cache;
@@ -180,14 +186,18 @@ int main(int argc, char *argv[])
             cout << "Export failed, nothing found" << endl;
         }
     } else {
+        // 1. look into the cache
+        bool cacheMiss = false;
         if(FileUtils::fileExists(cachefile)) {
             people = cc.curlCache(std::string(argv[1]));
         }
 
+        // nothing found in cache? => search online
         if(people.size() == 0) {
-           QString s(QString::fromStdString(argv[1]));
-           query = query.arg(s).arg(s);
-           people = cc.curlCard(query.toStdString());
+           cacheMiss = true;
+           MVCS::StringUtils::replace(&query, "%1", std::string(argv[1]));
+           MVCS::StringUtils::replace(&query, "%2", std::string(argv[1]));
+           people = cc.curlCard(query);
         }
 
         if(people.size() > 0) {
@@ -197,6 +207,16 @@ int main(int argc, char *argv[])
                     std::cout << email << "\t" << person.FirstName.c_str() << " " << person.LastName.c_str() << std::endl;
                 }
             }
+
+            // now update the cache
+            if(cacheMiss) {
+                Cache cache;
+                cache.openDatabase();
+                foreach(Person p, people) {
+                    cache.addVCard(p.FirstName, p.LastName, p.Emails, p.rawCardData, p.lastUpdatedAt);
+                }
+            }
+
         } else {
             cout << "Search returned no results" << endl;
         }

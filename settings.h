@@ -28,6 +28,8 @@
 #include <QDir>
 #include "version.h"
 
+#define CONFIG_DIR ".config/muttvcardsearch";
+
 class Settings
 {
 public:
@@ -36,8 +38,8 @@ public:
     void sync();
     std::string getProperty(const std::string &key);
     const std::string getCacheFile();
-    const char* getConfigDir();
-    const char* getConfigFile();
+    const std::string getConfigDir();
+    const std::string getConfigFile();
 
 private:
     QSettings cfg;
