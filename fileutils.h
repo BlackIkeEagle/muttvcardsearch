@@ -22,14 +22,17 @@
 #define FILEUTILS_H
 
 #include <string>
+#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <stdio.h>
 
 // for getHomeDir()
+#include <stdlib.h>
 #include <unistd.h>
-#include <sys/types.h>
 #include <pwd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 using namespace std;
 
@@ -39,6 +42,8 @@ public:
     FileUtils();
     static bool fileExists(const std::string& file);
     static bool fileRemove(const std::string& file);
+    static bool dirExists(const std::string& dir);
+    static bool putFileContent(const std::string& path, const std::string &content);
     static std::string getFileContent(const std::string& path);
     static std::string getHomeDir();
 };
