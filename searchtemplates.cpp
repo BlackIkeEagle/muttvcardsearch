@@ -20,10 +20,10 @@ SearchTemplates::SearchTemplates()
     searchTemplate += "</D:prop>";
     searchTemplate += "<C:filter test=\"anyof\">";
     searchTemplate += "<C:prop-filter name=\"FN\">";
-    searchTemplate += "<C:text-match collation=\"i;unicode-casemap\" match-type=\"contains\">%1</C:text-match>";
+    searchTemplate += "<C:text-match collation=\"i;unicode-casemap\" match-type=\"contains\">%s</C:text-match>";
     searchTemplate += "</C:prop-filter>";
     searchTemplate += "<C:prop-filter name=\"EMAIL\">";
-    searchTemplate += "<C:text-match collation=\"i;unicode-casemap\" match-type=\"contains\">%2</C:text-match>";
+    searchTemplate += "<C:text-match collation=\"i;unicode-casemap\" match-type=\"contains\">%s</C:text-match>";
     searchTemplate += "</C:prop-filter>";
     searchTemplate += "</C:filter>";
     searchTemplate += "</C:addressbook-query>";

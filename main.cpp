@@ -195,8 +195,7 @@ int main(int argc, char *argv[])
         // nothing found in cache? => search online
         if(people.size() == 0) {
            cacheMiss = true;
-           MVCS::StringUtils::replace(&query, "%1", std::string(argv[1]));
-           MVCS::StringUtils::replace(&query, "%2", std::string(argv[1]));
+           MVCS::StringUtils::replace(&query, "%s", std::string(argv[1]));
            people = cc.curlCard(query);
         }
 

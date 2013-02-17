@@ -8,11 +8,12 @@
     </C:address-data>
   </D:prop>
   <C:filter test="anyof">
+   <!-- you can have as many filters as you like, just use %s as your placeholder -->
     <C:prop-filter name="FN">
-      <C:text-match collation="i;unicode-casemap" match-type="contains">%1</C:text-match>
+      <C:text-match collation="i;unicode-casemap" match-type="contains">%s</C:text-match>
     </C:prop-filter>
     <C:prop-filter name="EMAIL">
-      <C:text-match collation="i;unicode-casemap" match-type="contains">%2</C:text-match>
+      <C:text-match collation="i;unicode-casemap" match-type="contains">%s</C:text-match>
     </C:prop-filter>
   </C:filter>
 </C:addressbook-query>
