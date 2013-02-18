@@ -21,10 +21,8 @@
 #ifndef OPTION_H
 #define OPTION_H
 
-// fixme and remove these two!
-#include <QString>
-#include <QStringList>
-
+#include <string>
+#include <cstring>
 #include <stdlib.h>
 
 class Option
@@ -33,9 +31,6 @@ public:
     Option(int argc, char **argv);
     std::string getOption(const std::string &option);
     bool hasOption(const std::string &option);
-    void trimQuotes(QString *s);
-    void trimChar(QString *s, const QChar &c);
-
     static bool isVerbose();
 
 private:
