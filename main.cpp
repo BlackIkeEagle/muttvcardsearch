@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
     }
 
     if(false == cfg.isValid()) {
-        cout << "WARN: Can't open config file '" << cfg.getConfigFile() << "'" << endl;
+        cout << "WARN: Invalid configuration or can't open '" << cfg.getConfigFile() << "'" << endl;
         cout << "WARN: Please create a valid configuration first.'" << endl;
         return 1;
     }
@@ -185,6 +185,7 @@ int main(int argc, char *argv[])
                 numRecords++;
             }
 
+            chmod(cachefile.c_str(), S_IRUSR | S_IWUSR);
             cout << "Cache created (" << numRecords << " records)" << endl;
         } else {
             cout << "Export failed, nothing found" << endl;
