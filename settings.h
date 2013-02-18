@@ -21,28 +21,30 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-#include <string>
-#include <QCoreApplication>
-#include <QSettings>
-#include <QFileInfo>
-#include <QDir>
 #include "version.h"
+#include "fileutils.h"
+#include <map>
 
-#define CONFIG_DIR ".config/muttvcardsearch";
+#define CONFIG_DIR ".config/muttvcardsearch"
+#define CONFIG_FILE "muttvcardsearch.conf"
+typedef std::map <std::string, std::string> CfgMap;
 
 class Settings
 {
 public:
-    static void SetApplicationProprties();
+    Settings();
+    ~Settings();
     void setProperty(std::string key, std::string& value);
-    void sync();
     std::string getProperty(const std::string &key);
     const std::string getCacheFile();
     const std::string getConfigDir();
     const std::string getConfigFile();
+    bool isValid();
 
 private:
-    QSettings cfg;
+    CfgMap cfg;
+    bool changed;
+    bool valid;
 };
 
 #endif // SETTINGS_H

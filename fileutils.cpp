@@ -53,20 +53,21 @@ bool FileUtils::fileRemove(const string &file) {
     return true;
 }
 
-std::string FileUtils::getFileContent(const string &path) {
+bool FileUtils::getFileContent(const string &path, string *buffer) {
     std::ifstream s;
     s.open(path.c_str());
 
     if(false == s.is_open()) {
         cerr << "Unable to open file '"<< path << "'" << endl;
-        return "";
+        return false;
     }
 
-    std::stringstream buffer;
-    buffer << s.rdbuf();
+    std::stringstream buf;
+    buf << s.rdbuf();
     s.close();
 
-    return buffer.str();
+    *buffer = buf.str();
+    return true;
 }
 
 bool FileUtils::putFileContent(const std::string& path, const std::string &content) {

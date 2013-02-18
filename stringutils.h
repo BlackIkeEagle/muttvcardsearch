@@ -36,6 +36,7 @@ namespace MVCS {
         StringUtils();
         static vector<string> split(const string& s, const string& token);
         static bool endsWith(const string& text, string suffix);
+        static bool startsWith(const string& text, const string prefix);
         static bool contains(const string& text, const string& pattern);
         static void replace(string *text, const std::string& from, const std::string& to);
     };

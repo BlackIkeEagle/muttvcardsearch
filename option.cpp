@@ -50,7 +50,7 @@ std::string Option::getOption(const std::string &option) {
 
         int position = argument.find('=');
         std::string left = argument.substr(0, position);
-        std::string right = argument.substr(position);
+        std::string right = argument.substr(position + 1);
 
         // sanitize me!
         if(left == option) return right;

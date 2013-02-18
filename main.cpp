@@ -69,7 +69,6 @@ void printError(QString detail) {
 
 int main(int argc, char *argv[])
 {
-    Settings::SetApplicationProprties();
     Settings cfg;
     Option opt(argc, argv);
 
@@ -103,9 +102,6 @@ int main(int argc, char *argv[])
             return 1;
         }
 
-        // sync to make sure the config file exists
-        cfg.sync();
-
         // chmod go-a to the config file, ignore the results
         chmod(cfg.getConfigDir().c_str(), S_IRUSR | S_IWUSR | S_IXUSR);
         chmod(cfg.getConfigFile().c_str(), S_IRUSR | S_IWUSR);
@@ -113,6 +109,12 @@ int main(int argc, char *argv[])
         return 0;
     } else if ( argc != 2) {
         printError("invalid or missing arguments");
+        return 1;
+    }
+
+    if(false == cfg.isValid()) {
+        cout << "WARN: Can't open config file '" << cfg.getConfigFile() << "'" << endl;
+        cout << "WARN: Please create a valid configuration first.'" << endl;
         return 1;
     }
 
@@ -129,7 +131,8 @@ int main(int argc, char *argv[])
         // overwrite the default export template with one the user provided
         std::string templateFile = FileUtils::getHomeDir() + "/" + cfg.getConfigDir() + "/export.xml";
         if(FileUtils::fileExists(templateFile)) {
-            query = FileUtils::getFileContent(templateFile);
+            if(false == FileUtils::getFileContent(templateFile, &query))
+                return 1;
         }
 
         doCache = true;
@@ -138,7 +141,8 @@ int main(int argc, char *argv[])
         // overwrite the default search template with one the user provided
         std::string templateFile = FileUtils::getHomeDir() + "/" + cfg.getConfigDir() + "/search.xml";
         if(FileUtils::fileExists(templateFile)) {
-            query = FileUtils::getFileContent(templateFile);
+            if(false == FileUtils::getFileContent(templateFile, &query))
+                return 1;
         }
     }
 

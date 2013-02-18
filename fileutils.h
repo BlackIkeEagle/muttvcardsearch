@@ -44,7 +44,7 @@ public:
     static bool fileRemove(const std::string& file);
     static bool dirExists(const std::string& dir);
     static bool putFileContent(const std::string& path, const std::string &content);
-    static std::string getFileContent(const std::string& path);
+    static bool getFileContent(const std::string& path, std::string *buffer);
     static std::string getHomeDir();
 };
 

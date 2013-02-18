@@ -72,6 +72,18 @@ bool MVCS::StringUtils::endsWith(const string &text, string suffix) {
     return false;
 }
 
+bool MVCS::StringUtils::startsWith(const string &text, const string prefix) {
+    if( text.length() == 0 || prefix.length() == 0 )
+        return false;
+
+    if( prefix.length() > text.length() )
+        return false;
+
+    string tmp = text.substr(0, prefix.length());
+    if(tmp == prefix) return true;
+    return false;
+}
+
 bool MVCS::StringUtils::contains(const string &text, const string& pattern) {
     if( text.length() == 0 || pattern.length() == 0 )
         return false;

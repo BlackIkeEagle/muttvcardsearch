@@ -19,22 +19,71 @@
  ***************************************************************************/
 
 #include "settings.h"
+#include "stringutils.h"
 
-void Settings::SetApplicationProprties() {
-    QCoreApplication::setApplicationName(APPNAME);
-    QCoreApplication::setOrganizationName(APPNAME);
+// CTOR creates settings hash
+Settings::Settings() {
+    valid = false;
+    changed = false;
+
+    std::string line;
+    std::string filename (getConfigFile());
+    std::ifstream f (filename.c_str());
+
+    if(f.is_open()) {
+        int numSettings = 0; // we have 3
+        while(getline(f, line)) {
+            std::vector<std::string> tokens = MVCS::StringUtils::split(line, "=");
+            if(tokens.size() == 2) {
+                cfg[tokens.at(0)] = tokens.at(1);
+                numSettings++;
+            }
+        }
+        f.close();
+
+        if(numSettings == 3)
+            valid = true;
+    }
+}
+
+Settings::~Settings() {
+    if(changed) {
+        std::ofstream o;
+        o.open(getConfigFile().c_str(), ios::out | ios::trunc);
+
+        if(o.is_open()) {
+            CfgMap::iterator end = cfg.end();
+            for (CfgMap::const_iterator it = cfg.begin(); it != end; ++it) {
+                o << it->first << "=" << it->second << endl;
+            }
+
+            o.close();
+
+        } else {
+            cerr << "Can't update/write config file '" << getConfigFile() << "'" << endl;
+        }
+    }
+
+    cfg.clear();
+}
+
+bool Settings::isValid() {
+    return valid;
 }
 
 void Settings::setProperty(std::string key, std::string &value) {
-    cfg.setValue(QString::fromStdString(key), QVariant::fromValue(QString::fromStdString(value)));
-}
-
-void Settings::sync() {
-    cfg.sync();
+    cfg[key] = value;
+    changed = true;
 }
 
 std::string Settings::getProperty(const std::string& key) {
-    return cfg.value(QString::fromStdString(key)).toString().toStdString();
+    std::string res;
+    CfgMap::const_iterator it = cfg.begin();
+    it = cfg.find(key);
+    if(it != cfg.end())
+        res = it->second;
+
+    return res;
 }
 
 const std::string Settings::getConfigDir() {
@@ -43,12 +92,13 @@ const std::string Settings::getConfigDir() {
 }
 
 const std::string Settings::getConfigFile() {
-    return cfg.fileName().toStdString();
+    std::string s = FileUtils::getHomeDir();
+    s.append("/").append(CONFIG_DIR).append("/").append(CONFIG_FILE);
+    return s;
 }
 
 const std::string Settings::getCacheFile() {
-    QDir dir = QFileInfo(cfg.fileName()).absolutePath();
-    std::string s(dir.absolutePath().toStdString());
-    s.append("/cache.sqlite3");
+    std::string s = FileUtils::getHomeDir();
+    s.append("/").append(CONFIG_DIR).append("/cache.sqlite3");
     return s;
 }
