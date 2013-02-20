@@ -33,7 +33,7 @@ Settings::Settings() {
     if(f.is_open()) {
         int numSettings = 0; // we have 3
         while(getline(f, line)) {
-            std::vector<std::string> tokens = MVCS::StringUtils::split(line, "=");
+            std::vector<std::string> tokens = StringUtils::split(line, "=");
             if(tokens.size() == 2) {
                 cfg[tokens.at(0)] = tokens.at(1);
                 numSettings++;

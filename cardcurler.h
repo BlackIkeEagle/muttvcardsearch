@@ -22,8 +22,6 @@
 #define CARDCURLER_H
 
 #include <iostream>
-using namespace std;
-
 #include <curl/curl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,6 +34,13 @@ using namespace std;
 #include "person.h"
 #include "settings.h"
 #include "stringutils.h"
+
+// remove this!
+//#include <QList>
+//#include <QStringList>
+//#include <QString>
+
+using namespace std;
 
 class CardCurler
 {

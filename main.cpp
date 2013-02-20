@@ -30,8 +30,8 @@
 #include "fileutils.h"
 #include "searchtemplates.h"
 
-void printError(QString detail) {
-    cout << detail.toStdString() << endl << endl;
+void printError(const std::string &detail) {
+    cout << detail << endl << endl;
 
     cout << "###############################" << endl;
     cout << "   **** " << APPNAME << " ****" << endl;
@@ -174,7 +174,9 @@ int main(int argc, char *argv[])
 
             int numRecords = 0;
             std::cout << "Importing vcards" << std::endl;
-            foreach(Person p, people) {
+
+            for(unsigned int i=0; i<people.size(); i++) {
+                Person p = people.at(i);
                 cache.addVCard(
                             p.FirstName,
                             p.LastName,
@@ -200,15 +202,16 @@ int main(int argc, char *argv[])
         // nothing found in cache? => search online
         if(people.size() == 0) {
            cacheMiss = true;
-           MVCS::StringUtils::replace(&query, "%s", std::string(argv[1]));
+           StringUtils::replace(&query, "%s", std::string(argv[1]));
            people = cc.curlCard(query);
         }
 
         if(people.size() > 0) {
             cout << endl; // needed by mutt
-            foreach(Person person, people) {
-                foreach(std::string email, person.Emails) {
-                    std::cout << email << "\t" << person.FirstName.c_str() << " " << person.LastName.c_str() << std::endl;
+            for(unsigned int i=0; i<people.size(); i++) {
+                Person p = people.at(i);
+                for(unsigned int j=0; j < p.Emails.size(); j++) {
+                    std::cout << p.Emails.at(j) << "\t" << p.FirstName.c_str() << " " << p.LastName.c_str() << std::endl;
                 }
             }
 
@@ -216,7 +219,8 @@ int main(int argc, char *argv[])
             if(cacheMiss) {
                 Cache cache;
                 cache.openDatabase();
-                foreach(Person p, people) {
+                for(unsigned int i=0; i<people.size(); i++) {
+                    Person p = people.at(i);
                     cache.addVCard(p.FirstName, p.LastName, p.Emails, p.rawCardData, p.lastUpdatedAt);
                 }
             }

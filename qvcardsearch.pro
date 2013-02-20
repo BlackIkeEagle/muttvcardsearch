@@ -40,7 +40,9 @@ SOURCES += main.cpp \
     url.cpp \
     stringutils.cpp \
     fileutils.cpp \
-    searchtemplates.cpp
+    searchtemplates.cpp \
+    vcard/card.cpp \
+    vcard/cardproperty.cpp
 
 LIBS += -lcurl -lvcard -lsqlite3
 
@@ -54,7 +56,10 @@ HEADERS += \
     url.h \
     stringutils.h \
     fileutils.h \
-    searchtemplates.h
+    searchtemplates.h \
+    vcard/card.h \
+    vcard/cardtokens.h \
+    vcard/cardproperty.h
 
 RESOURCES +=
 

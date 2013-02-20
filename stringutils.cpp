@@ -20,7 +20,7 @@
 
 #include "stringutils.h"
 
-vector<string> MVCS::StringUtils::split(const string &s, const string &token)
+vector<string> StringUtils::split(const string &s, const string &token)
 {
     // return this
     vector<string> result;
@@ -55,7 +55,7 @@ vector<string> MVCS::StringUtils::split(const string &s, const string &token)
     return result;
 }
 
-bool MVCS::StringUtils::endsWith(const string &text, string suffix) {
+bool StringUtils::endsWith(const string &text, string suffix) {
     if( text.length() == 0 || suffix.length() == 0 )
         return false;
 
@@ -72,7 +72,7 @@ bool MVCS::StringUtils::endsWith(const string &text, string suffix) {
     return false;
 }
 
-bool MVCS::StringUtils::startsWith(const string &text, const string prefix) {
+bool StringUtils::startsWith(const string &text, const string prefix) {
     if( text.length() == 0 || prefix.length() == 0 )
         return false;
 
@@ -84,7 +84,7 @@ bool MVCS::StringUtils::startsWith(const string &text, const string prefix) {
     return false;
 }
 
-bool MVCS::StringUtils::contains(const string &text, const string& pattern) {
+bool StringUtils::contains(const string &text, const string& pattern) {
     if( text.length() == 0 || pattern.length() == 0 )
         return false;
 
@@ -97,7 +97,7 @@ bool MVCS::StringUtils::contains(const string &text, const string& pattern) {
     return false;
 }
 
-void MVCS::StringUtils::replace(string *text, const string &from, const string &to) {
+void StringUtils::replace(string *text, const string &from, const string &to) {
     unsigned long pos = text->find(from);
 
     // text contains something to replace
