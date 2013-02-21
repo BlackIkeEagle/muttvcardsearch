@@ -24,14 +24,17 @@ std::vector< vCard::vCardItem > vCard::vCardItem::fromString(const std::string &
     std::vector<std::string> tokens = StringUtils::split(data, VC_BEGIN_TOKEN);
     if(tokens.size() > 0) {
         for(unsigned int i=0; i<tokens.size(); i++) {
-            std::vector<std::string> cardStrings = StringUtils::split(tokens.at(i), VC_END_TOKEN);
-            if(cardStrings.size() > 0) {
-                for(unsigned int j=0; j<cardStrings.size(); j++) {
-                    vCard::vCardItem vcard;
-                    vCard::vCardItem::parse(&vcard, cardStrings.at(j));
+            std::string token = tokens.at(i);
+            if( token.size() > 0 ) {
+                std::vector<std::string> cardStrings = StringUtils::split(token, VC_END_TOKEN);
+                if(cardStrings.size() > 0) {
+                    for(unsigned int j=0; j<cardStrings.size(); j++) {
+                        vCard::vCardItem vcard;
+                        vCard::vCardItem::parse(&vcard, cardStrings.at(j));
 
-                    if( ! vcard.isEmpty() )
-                        vcards.push_back(vcard);
+                        if( ! vcard.isEmpty() )
+                            vcards.push_back(vcard);
+                    }
                 }
             }
         }
@@ -67,13 +70,15 @@ void vCard::vCardItem::parse(vCard::vCardItem* vcard, const std::string &data) {
     while(std::getline(ss, line))
     {
        std::vector<std::string> lineTokens;
-       if( line != "" ) {
+       if( line.size() > 0 ) {
            for(unsigned int j=0; j<vc_tokenlist.size(); j++) {
-               std::string token (vc_tokenlist.at(j));
-               lineTokens = StringUtils::split(line, token);
-               if(lineTokens.size() == 2) {
-                   CardProperty p(lineTokens.at(1));
-                   vcard->setProperty(p); // TODO: param handling. I.e. a property EMAIL can have several sub-properties like PRIVATE, INTERNET...
+               std::string vc_token (vc_tokenlist.at(j));
+               if(vc_token.size() > 0) {
+                   lineTokens = StringUtils::split(line, vc_token);
+                   if(lineTokens.size() == 2) {
+                       CardProperty p(lineTokens.at(1));
+                       vcard->setProperty(p); // TODO: param handling. I.e. a property EMAIL can have several sub-properties like PRIVATE, INTERNET...
+                   }
                }
            }
        }

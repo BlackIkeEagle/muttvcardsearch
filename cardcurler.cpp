@@ -149,7 +149,8 @@ std::vector<Person> CardCurler::getAllCards(const std::string &server, const std
 
                 if(card.size() > 0) {
                     Person p;
-                    QList<vCard> cards = vCard::fromByteArray(QString::fromStdString(card).toUtf8());
+                    std::vector<vCard::vCardItem> cards = vCard::vCardItem::fromString(card);
+                    //QList<vCard> cards = vCard::fromByteArray(QString::fromStdString(card).toUtf8());
 
                     if(cards.size() == 1) {
                         createPerson(&cards[0], &p);
@@ -187,64 +188,64 @@ std::vector<Person> CardCurler::getAllCards(const std::string &server, const std
  *
  * @return: void()
  */
-void CardCurler::createPerson(const vCard *vcdata, Person *p) {
-    vCardPropertyList vcPropertyList = vcdata->properties();
-    foreach(vCardProperty vcProperty, vcPropertyList) {
-        if(vcProperty.name() == VC_EMAIL) {
-            foreach(QString s, vcProperty.values()) {
-                p->Emails.push_back(s.toStdString());
-            }
-        } else if(vcProperty.name() == VC_NAME) {
-            QStringList values = vcProperty.values();
-            if (!values.isEmpty()) {
-                QString fName = values.at(vCardProperty::Firstname);
-                QString lName = values.at(vCardProperty::Lastname);
-                if(!fName.isNull() && !fName.isEmpty() && lName.isNull() && !lName.isEmpty()) {
-                    p->FirstName = fName.toStdString();
-                    p->LastName = lName.toStdString();
-                }
-            }
-        } else if(vcProperty.name() == VC_FORMATTED_NAME) {
-            // not nice but there are entries in my carddav server
-            // who dont have a N (i.e. VC_NAME property containing firstname and lastname separately)
-            // but instead have only the formatted name property. So i will split this string
-            // on each whitespace and combine it somewhat friendly... But what about a title?
-            if(p->FirstName.size() == 0 || p->LastName.size() == 0) {
-                QString formattedName = vcProperty.values().at(0);
-                if(formattedName.isNull() || formattedName.isEmpty()) {
-                    cerr << "There is no vcard property at index 0. Therefore I cant read the value of formatted name (FN)." << endl;
-                } else {
-                    QStringList tokens = formattedName.split(QRegExp("\\s"));
-                    if(!tokens.isEmpty() && tokens.size() == 2) {
-                        p->FirstName = tokens.at(0).toStdString();
-                        p->LastName = tokens.at(1).toStdString();
-                    } else {
-                        cerr << "VCard property 'FN' contains invalid value(s): more then 2 tokens or none at all!: " << formattedName.toStdString() << endl;
-                    }
-                }
-            }
-        } else if (vcProperty.name() == VC_REVISION) {
-            // append updated_at to the person
-            QStringList revs = vcProperty.values();
-            if(!revs.empty()) {
-                p->lastUpdatedAt = revs.at(0).toStdString();
-            }
-        }
+void CardCurler::createPerson(const vCard::vCardItem *vcdata, Person *p) {
+//    vCardPropertyList vcPropertyList = vcdata->properties();
+//    foreach(vCardProperty vcProperty, vcPropertyList) {
+//        if(vcProperty.name() == VC_EMAIL) {
+//            foreach(QString s, vcProperty.values()) {
+//                p->Emails.push_back(s.toStdString());
+//            }
+//        } else if(vcProperty.name() == VC_NAME) {
+//            QStringList values = vcProperty.values();
+//            if (!values.isEmpty()) {
+//                QString fName = values.at(vCardProperty::Firstname);
+//                QString lName = values.at(vCardProperty::Lastname);
+//                if(!fName.isNull() && !fName.isEmpty() && lName.isNull() && !lName.isEmpty()) {
+//                    p->FirstName = fName.toStdString();
+//                    p->LastName = lName.toStdString();
+//                }
+//            }
+//        } else if(vcProperty.name() == VC_FORMATTED_NAME) {
+//            // not nice but there are entries in my carddav server
+//            // who dont have a N (i.e. VC_NAME property containing firstname and lastname separately)
+//            // but instead have only the formatted name property. So i will split this string
+//            // on each whitespace and combine it somewhat friendly... But what about a title?
+//            if(p->FirstName.size() == 0 || p->LastName.size() == 0) {
+//                QString formattedName = vcProperty.values().at(0);
+//                if(formattedName.isNull() || formattedName.isEmpty()) {
+//                    cerr << "There is no vcard property at index 0. Therefore I cant read the value of formatted name (FN)." << endl;
+//                } else {
+//                    QStringList tokens = formattedName.split(QRegExp("\\s"));
+//                    if(!tokens.isEmpty() && tokens.size() == 2) {
+//                        p->FirstName = tokens.at(0).toStdString();
+//                        p->LastName = tokens.at(1).toStdString();
+//                    } else {
+//                        cerr << "VCard property 'FN' contains invalid value(s): more then 2 tokens or none at all!: " << formattedName.toStdString() << endl;
+//                    }
+//                }
+//            }
+//        } else if (vcProperty.name() == VC_REVISION) {
+//            // append updated_at to the person
+//            QStringList revs = vcProperty.values();
+//            if(!revs.empty()) {
+//                p->lastUpdatedAt = revs.at(0).toStdString();
+//            }
+//        }
 
-        if(false == exportMode) {
-            std::vector<std::string> emails = p->Emails;
-            if(emails.size() > 1) {
-                int counter = 0;
-                foreach(std::string email, emails) {
-                    unsigned long match = email.find(_rawQuery );
-                    if( match != std::string::npos ) {
-                        p->Emails.erase(p->Emails.begin() + counter);
-                    }
-                    counter++;
-                }
-            }
-        }
-    }
+//        if(false == exportMode) {
+//            std::vector<std::string> emails = p->Emails;
+//            if(emails.size() > 1) {
+//                int counter = 0;
+//                foreach(std::string email, emails) {
+//                    unsigned long match = email.find(_rawQuery );
+//                    if( match != std::string::npos ) {
+//                        p->Emails.erase(p->Emails.begin() + counter);
+//                    }
+//                    counter++;
+//                }
+//            }
+//        }
+//    }
 }
 
 /*
@@ -378,12 +379,14 @@ std::vector<Person> CardCurler::curlCard(const std::string &query) {
                 if(isSOGO)
                     fixHtml(&s);
 
-                QList<vCard> vcards = vCard::fromByteArray(QString::fromStdString(s).toUtf8());
+                //QList<vCard> vcards = vCard::fromByteArray(QString::fromStdString(s).toUtf8());
+                std::vector<vCard::vCardItem> vcards = vCard::vCardItem::fromString(s);
 
-                if(!vcards.isEmpty()) {
-                    foreach(vCard c, vcards) {
+                if(vcards.size() > 0) {
+                    for(unsigned int j = 0; j < vcards.size(); j++) {
                         // there is only one vcard in the list - every time ;)
                         Person p;
+                        vCard::vCardItem c = vcards.at(j);
                         createPerson(&c, &p);
 
                         if(p.isValid()) {
