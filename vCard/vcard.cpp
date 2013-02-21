@@ -2,15 +2,19 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 
 vCard::vCard()
 {
 }
 
+// Copy CTOR
 vCard::vCard(const vCard& vcard)
 {
-   m_properties = vcard.properties();
-   m_raw = vcard.getRawData();
+    // don't forget to copy all member vars or they are lost if the
+    // object goes out of scope after it was added to a list/vector
+    m_properties = vcard.properties();
+    m_raw = vcard.getRawData();
 }
 
 vCard::vCard(const vCardPropertyList& properties)
@@ -24,25 +28,26 @@ vCard::~vCard()
 
 void vCard::addProperty(const vCardProperty& property)
 {
-//    int count = m_properties.count();
-//    for (int i = 0; i < count; i++)
-//    {
-//        vCardProperty current = m_properties.at(i);
-//        if (current.name() == property.name() && current.params() == property.params())
-//        {
-//            m_properties[i] = property;
-//            return;
-//        }
-//    }
+    int count = m_properties.size();
+    for (int i = 0; i < count; i++)
+    {
+        vCardProperty current = m_properties.at(i);
+        if (current.name() == property.name() && current.params() == property.params())
+        {
+            m_properties[i] = property;
+            return;
+        }
+    }
 
-//    m_properties.append(property);
+    m_properties.push_back(property);
 
 }
 
 void vCard::addProperties(const vCardPropertyList& properties)
 {
-//    foreach (vCardProperty property, properties)
-//        this->addProperty(property);
+    for(unsigned int i=0; i<properties.size(); i++) {
+        this->addProperty(properties.at(i));
+    }
 }
 
 vCardPropertyList vCard::properties() const
@@ -52,60 +57,59 @@ vCardPropertyList vCard::properties() const
 
 vCardProperty vCard::property(const std::string &name, const vCardParamList& params, bool strict) const
 {
-//    int count = m_properties.count();
-//    for (int i = 0; i < count; i++)
-//    {
-//        vCardProperty current = m_properties.at(i);
-//        if (current.name() == name)
-//        {
-//            vCardParamList current_params = current.params();
+    int count = m_properties.size();
+    for (int i = 0; i < count; i++)
+    {
+        vCardProperty current = m_properties.at(i);
+        if (current.name() == name)
+        {
+            vCardParamList current_params = current.params();
 
-//            if (strict)
-//            {
-//                if (params != current_params)
-//                    continue;
-//            }
+            if (strict) {
+                if (params != current_params)
+                    continue;
+            } else {
+                for(unsigned int i=0; i<params.size(); i++) {
+                    std::vector<vCardParam>::iterator match = std::find(current_params.begin(), current_params.end(), params.at(i));
+                    if( match != current_params.end() ) {
+                        continue;
+                    }
+                }
+            }
 
-//            else
-//            {
-//                foreach (vCardParam param, params)
-//                    if (!current_params.contains(param))
-//                        continue;
-//            }
-
-//            return current;
-//        }
-//    }
+            return current;
+        }
+    }
 
     return vCardProperty();
 }
 
 bool vCard::contains(const std::string &name, const vCardParamList& params, bool strict) const
 {
-//    int count = m_properties.count();
-//    for (int i = 0; i < count; i++)
-//    {
-//        vCardProperty current = m_properties.at(i);
-//        if (current.name() != name)
-//            continue;
+    int count = m_properties.size();
+    for (int i = 0; i < count; i++)
+    {
+        vCardProperty current = m_properties.at(i);
+        if (current.name() != name)
+            continue;
 
-//        vCardParamList current_params = current.params();
+        vCardParamList current_params = current.params();
 
-//        if (strict)
-//        {
-//            if (params != current_params)
-//                continue;
-//        }
+        if (strict)
+        {
+            if (params != current_params)
+                continue;
+        } else {
+            for(unsigned int i=0; i<params.size(); i++) {
+                std::vector<vCardParam>::iterator match = std::find(current_params.begin(), current_params.end(), params.at(i));
+                if( match != current_params.end() ) {
+                    continue;
+                }
+            }
+        }
 
-//        else
-//        {
-//            foreach (vCardParam param, params)
-//                if (!current_params.contains(param))
-//                    continue;
-//        }
-
-//        return true;
-//    }
+        return true;
+    }
 
     return false;
 }
@@ -118,19 +122,21 @@ bool vCard::contains(const vCardProperty& property) const
 
 bool vCard::isValid() const
 {
-//    if (m_properties.isEmpty())
-//        return false;
-//    foreach (vCardProperty prop, m_properties)
-//        if (!prop.isValid())
-//            return false;
+    if (m_properties.size() == 0)
+        return false;
+
+    for(unsigned int i=0; i<m_properties.size(); i++) {
+        vCardProperty prop(m_properties.at(i));
+        if(!prop.isValid()) // we could return prop.isValid() but that will return at first iteration...
+            return false;
+    }
 
     return true;
 }
 
 int vCard::count() const
 {
-    //return m_properties.count();
-    return 1;
+    return m_properties.size();
 }
 
 std::string vCard::toString(vCardVersion version) const
@@ -162,10 +168,10 @@ std::string vCard::toString(vCardVersion version) const
 //    return lines.join(QString(VC_END_LINE_TOKEN)).toUtf8();
 }
 
-bool vCard::saveToFile(const std::string &filename) const
-{
-    return true;
-}
+//bool vCard::saveToFile(const std::string &filename) const
+//{
+//    return true;
+//}
 
 std::list<vCard> vCard::fromString(const std::string& data)
 {
