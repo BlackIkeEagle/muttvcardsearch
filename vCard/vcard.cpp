@@ -116,8 +116,8 @@ bool vCard::contains(const std::string &name, const vCardParamList& params, bool
 
 bool vCard::contains(const vCardProperty& property) const
 {
-    //return m_properties.contains(property);
-    return true;
+    std::vector<vCardProperty>::const_iterator match = std::find(m_properties.begin(), m_properties.end(), property);
+    return match == m_properties.end() ? false : true;
 }
 
 bool vCard::isValid() const
