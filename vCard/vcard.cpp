@@ -141,37 +141,34 @@ int vCard::count() const
 
 std::string vCard::toString(vCardVersion version) const
 {
-    return std::string();
-//    QStringList lines;
+    std::list<std::string> lines;
+    lines.push_back(VC_BEGIN_TOKEN);
 
-//    lines.append(VC_BEGIN_TOKEN);
+    switch (version)
+    {
+        case VC_VER_2_1:
+            lines.push_back(vCardProperty(VC_VERSION, "2.1").toString());
+            break;
 
-//    switch (version)
-//    {
-//        case VC_VER_2_1:
-//            lines.append(vCardProperty(VC_VERSION, "2.1").toByteArray());
-//            break;
+        case VC_VER_3_0:
+            lines.push_back(vCardProperty(VC_VERSION, "3.0").toString());
+            break;
 
-//        case VC_VER_3_0:
-//            lines.append(vCardProperty(VC_VERSION, "3.0").toByteArray());
-//            break;
+        default:
+            return std::string();
+    }
 
-//        default:
-//            return QByteArray();
-//    }
+    for( unsigned int i=0; i < this->properties().size(); i++ ) {
+        vCardProperty property(properties().at(i));
+        lines.push_back( property.toString() );
+    }
 
-//    foreach (vCardProperty property, this->properties())
-//        lines.append(property.toByteArray(version));
-
-//    lines.append(VC_END_TOKEN);
+    lines.push_back(VC_END_TOKEN);
 
 //    return lines.join(QString(VC_END_LINE_TOKEN)).toUtf8();
+    return std::string();
 }
 
-//bool vCard::saveToFile(const std::string &filename) const
-//{
-//    return true;
-//}
 
 std::list<vCard> vCard::fromString(const std::string& data)
 {

@@ -32,8 +32,6 @@ public:
     int count() const;
     std::string toString(vCardVersion version = VC_VER_2_1) const;
 
-    //bool saveToFile(const std::string& filename) const;
-
     static std::list<vCard> fromString(const std::string& data);
     static std::list<vCard> fromFile(const std::string& filename);
 };
