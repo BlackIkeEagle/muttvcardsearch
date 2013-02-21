@@ -149,7 +149,7 @@ std::vector<Person> CardCurler::getAllCards(const std::string &server, const std
 
                 if(card.size() > 0) {
                     Person p;
-                    std::vector<vCard::vCardItem> cards = vCard::vCardItem::fromString(card);
+                    std::vector<vCard> cards = vCard::fromString(card);
                     //QList<vCard> cards = vCard::fromByteArray(QString::fromStdString(card).toUtf8());
 
                     if(cards.size() == 1) {
@@ -188,7 +188,7 @@ std::vector<Person> CardCurler::getAllCards(const std::string &server, const std
  *
  * @return: void()
  */
-void CardCurler::createPerson(const vCard::vCardItem *vcdata, Person *p) {
+void CardCurler::createPerson(const vCard *vcdata, Person *p) {
 //    vCardPropertyList vcPropertyList = vcdata->properties();
 //    foreach(vCardProperty vcProperty, vcPropertyList) {
 //        if(vcProperty.name() == VC_EMAIL) {
@@ -379,14 +379,13 @@ std::vector<Person> CardCurler::curlCard(const std::string &query) {
                 if(isSOGO)
                     fixHtml(&s);
 
-                //QList<vCard> vcards = vCard::fromByteArray(QString::fromStdString(s).toUtf8());
-                std::vector<vCard::vCardItem> vcards = vCard::vCardItem::fromString(s);
+                std::vector<vCard> vcards = vCard::fromString(s);
 
                 if(vcards.size() > 0) {
                     for(unsigned int j = 0; j < vcards.size(); j++) {
                         // there is only one vcard in the list - every time ;)
                         Person p;
-                        vCard::vCardItem c = vcards.at(j);
+                        vCard c = vcards.at(j);
                         createPerson(&c, &p);
 
                         if(p.isValid()) {

@@ -18,7 +18,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include <vcard/card.h>
+#include "vCard/vcard.h"
 #include <vector>
 #include <sys/stat.h>
 #include "option.h"
@@ -69,7 +69,7 @@ void printError(const std::string &detail) {
 
 int main(int argc, char *argv[])
 {
-    std::vector<vCard::vCardItem> list = vCard::vCardItem::fromFile("/home/archie/source/vcards.txt");
+    std::list<vCard> list = vCard::fromFile("/home/archie/source/vcards.txt");
 
     Settings cfg;
     Option opt(argc, argv);

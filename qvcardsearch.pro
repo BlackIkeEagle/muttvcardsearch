@@ -41,8 +41,9 @@ SOURCES += main.cpp \
     stringutils.cpp \
     fileutils.cpp \
     searchtemplates.cpp \
-    vcard/card.cpp \
-    vcard/cardproperty.cpp
+    vCard/vcard.cpp \
+    vCard/vcardparam.cpp \
+    vCard/vcardproperty.cpp
 
 LIBS += -lcurl -lvcard -lsqlite3
 
@@ -57,9 +58,10 @@ HEADERS += \
     stringutils.h \
     fileutils.h \
     searchtemplates.h \
-    vcard/card.h \
-    vcard/cardtokens.h \
-    vcard/cardproperty.h
+    vCard/vcard.h \
+    vCard/vcard_globals.h \
+    vCard/vcardparam.h \
+    vCard/vcardproperty.h
 
 RESOURCES +=
 

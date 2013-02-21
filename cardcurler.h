@@ -21,7 +21,7 @@
 #ifndef CARDCURLER_H
 #define CARDCURLER_H
 
-#include "vcard/card.h"
+#include "vCard/vcard.h"
 #include <iostream>
 #include <curl/curl.h>
 #include <stdio.h>
@@ -87,7 +87,7 @@ private:
     std::vector< std::string > getvCardURLs(const std::string &query);
     void fixHtml(string *data);
     void init_vcard(struct vcdata *vc);
-    void createPerson(const vCard::vCardItem *vcdata, Person *p);
+    void createPerson(const vCard *vcdata, Person *p);
     bool listContainsQuery(const std::vector<std::string> *list, const std::string &query);
     static size_t writefunc(void *ptr, size_t size, size_t nmemb, struct vcdata *vc);
     static size_t readfunc(void *ptr, size_t size, size_t nmemb, void *stream);
