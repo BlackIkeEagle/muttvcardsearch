@@ -32,5 +32,4 @@ TODO
 
 PS:
 ------------
-should compile and work on allmost all *NIX versions/distributions where QT is supported and maybe Win32 too,
-because there is QT natively available as well as libcurl.
+should compile and work on allmost all *NIX versions/distributions. Maybe Win32 too.
