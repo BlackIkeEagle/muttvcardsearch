@@ -15,7 +15,7 @@ then
 2. cd into the new repository
 3. execute `qmake; make; sudo make install`
 
-Call muttvcardsearch without arguments so see how to configure it.
+Call muttvcardsearch without arguments to see how to configure it.
 After that set your query command in your .muttrc
 * `set query_command = "muttvcardsearch '%s'"`
 
@@ -27,7 +27,7 @@ The utility will automatically insert new records not found in the cache but fou
 
 TODO
 ------------
-* add option to refresh the cache instead of redownload it every time you made a change on your server
+* add option *--update-local-cache* to refresh the cache instead of redownload it every time you made a change on your server. This will only work after the migration away from libvcard.
 * add option to save a contact into your vcard store (just like abook)
 
 PS:
