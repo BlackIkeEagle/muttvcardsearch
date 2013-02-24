@@ -531,7 +531,7 @@ void CardCurler::init_vcard(vcdata *vc) {
     vc->len = 0;
     vc->ptr = (char*)malloc(vc->len+1);
     if (vc->ptr == NULL) {
-      fprintf(stderr, "malloc() failed\n");
+      std::cerr << "CardCurler::init_vcard: malloc() failed!" << std::endl;
       exit(EXIT_FAILURE);
     }
     vc->ptr[0] = '\0';
@@ -542,7 +542,7 @@ size_t CardCurler::writefunc(void *ptr, size_t size, size_t nmemb, vcdata *vc) {
     vc->ptr = (char*)realloc(vc->ptr, new_len+1);
 
     if (vc->ptr == NULL) {
-        fprintf(stderr, "realloc() failed\n");
+        std::cerr << "CardCurler::writefunc: realloc() failed!" << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -581,7 +581,7 @@ size_t CardCurler::WriteMemoryCallback(void *contents, size_t size, size_t nmemb
   mem->memory = (char*)realloc(mem->memory, mem->size + realsize + 1);
   if (mem->memory == NULL) {
     /* out of memory! */
-    printf("not enough memory (realloc returned NULL)\n");
+    std::cerr << "CardCurler::WriteMemoryCallback: realloc() failed!" << std::endl;
     exit(EXIT_FAILURE);
   }
 
