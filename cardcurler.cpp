@@ -21,6 +21,7 @@
 #include "cardcurler.h"
 #include "option.h"
 #include "cache.h"
+#include "vCard/strutils.h"
 
 /*
  * CTOR
@@ -150,7 +151,6 @@ std::vector<Person> CardCurler::getAllCards(const std::string &server, const std
                 if(card.size() > 0) {
                     Person p;
                     std::vector<vCard> cards = vCard::fromString(card);
-                    //QList<vCard> cards = vCard::fromByteArray(QString::fromStdString(card).toUtf8());
 
                     if(cards.size() == 1) {
                         createPerson(&cards[0], &p);
@@ -219,17 +219,19 @@ void CardCurler::createPerson(const vCard *vcdata, Person *p) {
             if(p->FirstName.size() == 0 || p->LastName.size() == 0) {
                 std::string formattedName = vcProperty.values().at(0);
                 if(formattedName.size() == 0) {
-                    cerr << "There is no vcard property at index 0. Therefore I cant read the value of formatted name (FN)." << endl;
-                } /*else {
+                    std::cerr << "There is no vcard property at index 0. Therefore I can't read the value of formatted name (FN)." << endl;
+                } else {
                     std::vector<std::string> tokens;
-                    QStringList tokens = formattedName.split(QRegExp("\\s"));
-                    if(!tokens.isEmpty() && tokens.size() == 2) {
-                        p->FirstName = tokens.at(0).toStdString();
-                        p->LastName = tokens.at(1).toStdString();
+                    formattedName = StrUtils::simplify(formattedName); // remove doubled whitespace
+                    formattedName = StrUtils::trim(formattedName); // remove leading and trailing whitespace
+                    StrUtils::split(&tokens, formattedName, ' ');
+                    if(tokens.size() == 2) {
+                        p->FirstName = tokens.at(0);
+                        p->LastName = tokens.at(1);
                     } else {
-                        cerr << "VCard property 'FN' contains invalid value(s): more then 2 tokens or none at all!: " << formattedName.toStdString() << endl;
+                        cerr << "VCard property 'FN' contains invalid value(s): more then 2 tokens or none at all!: " << formattedName << endl;
                     }
-                }*/
+                }
             }
         } else if (vcName == VC_REVISION) {
             // append updated_at to the person

@@ -19,6 +19,7 @@
  ***************************************************************************/
 
 #include "vCard/vcard.h"
+#include "vCard/strutils.h"
 #include <vector>
 #include <sys/stat.h>
 #include "option.h"
@@ -207,16 +208,16 @@ int main(int argc, char *argv[])
         }
 
         if(people.size() > 0) {
-            cout << endl; // needed by mutt
+            std::cout << std::endl; // needed by mutt to skip below the top line
             for(unsigned int i=0; i<people.size(); i++) {
                 Person p = people.at(i);
                 for(unsigned int j=0; j < p.Emails.size(); j++) {
-                    std::cout << p.Emails.at(j) << "\t" << p.FirstName.c_str() << " " << p.LastName.c_str() << std::endl;
+                    std::cout << p.Emails.at(j) << '\t' << p.FirstName << ' ' << p.LastName << std::endl;
                 }
             }
 
             // now update the cache
-            if(cacheMiss) {
+            if(cacheMiss && FileUtils::fileExists(cachefile)) {
                 Cache cache;
                 cache.openDatabase();
                 for(unsigned int i=0; i<people.size(); i++) {

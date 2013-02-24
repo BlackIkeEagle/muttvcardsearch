@@ -74,19 +74,40 @@ bool StrUtils::startWith(const std::string &text, const std::string &prefix) {
     return false;
 }
 
+// remove all multiple occurence of whitespace in the string with one space. i.e. ' '
 std::string StrUtils::simplify(const std::string &input) {
     std::string result;
+    int numFound = 0;
+
     for(std::string::size_type i = 0; i < input.size(); ++i) {
         switch(input[i]) {
         case ' ':
         case '\t':
-        case '\n':
+        case '\r':
+            numFound++;
+            if(numFound == 1) result.push_back(' ');
             break;
         default:
             result.push_back(input[i]);
+            numFound = 0;
         }
     }
     return result;
+}
+
+std::string StrUtils::trim(std::string &input) {
+    std::string s(StrUtils::ltrim(input));
+    return StrUtils::rtrim(s);
+}
+
+std::string StrUtils::ltrim(std::string &input) {
+    input.erase(input.begin(), std::find_if(input.begin(), input.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+    return input;
+}
+
+std::string StrUtils::rtrim(std::string &input) {
+    input.erase(std::find_if(input.rbegin(), input.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), input.end());
+    return input;
 }
 
 std::string StrUtils::join(const std::vector<std::string> *values, const char token) {

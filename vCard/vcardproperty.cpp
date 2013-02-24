@@ -141,7 +141,7 @@ std::vector<vCardProperty> vCardProperty::fromString(const std::string& data)
         }
 
         // the value after the first occurance of VC_ASSIGNMENT_TOKEN
-        std::string paramValue = tokens.second;
+        std::string paramValue = StrUtils::trim(tokens.second);
 
         if (paramName != VC_VERSION) {
             if(hasModifiers == false) { // there are no properties in the patameterName, like "FN:John Doe"
