@@ -12,8 +12,8 @@ first, install
 then
 
 1. clone the repository
-2. cd into muttvcardsearch
-3. execute qmake; make; sudo make install
+2. cd into the new repository
+3. execute `qmake; make; sudo make install`
 
 Call muttvcardsearch without arguments so see how to configure it.
 After that set your query command in your .muttrc
