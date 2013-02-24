@@ -27,7 +27,7 @@ The utility will automatically insert new records not found in the cache but fou
 
 TODO
 ------------
-* add option *--update-local-cache* to refresh the cache instead of redownload it every time you made a change on your server. This will only work after the migration away from libvcard.
+* add option *--update-local-cache* to refresh the cache instead to force you to re-create it every time you made a change on your server. This will only work after the migration away from libvcard (this requirement has been met with version 1.4)
 * add option to save a contact into your vcard store (just like abook)
 
 PS:
