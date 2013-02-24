@@ -189,63 +189,71 @@ std::vector<Person> CardCurler::getAllCards(const std::string &server, const std
  * @return: void()
  */
 void CardCurler::createPerson(const vCard *vcdata, Person *p) {
-//    vCardPropertyList vcPropertyList = vcdata->properties();
-//    foreach(vCardProperty vcProperty, vcPropertyList) {
-//        if(vcProperty.name() == VC_EMAIL) {
-//            foreach(QString s, vcProperty.values()) {
-//                p->Emails.push_back(s.toStdString());
-//            }
-//        } else if(vcProperty.name() == VC_NAME) {
-//            QStringList values = vcProperty.values();
-//            if (!values.isEmpty()) {
-//                QString fName = values.at(vCardProperty::Firstname);
-//                QString lName = values.at(vCardProperty::Lastname);
-//                if(!fName.isNull() && !fName.isEmpty() && lName.isNull() && !lName.isEmpty()) {
-//                    p->FirstName = fName.toStdString();
-//                    p->LastName = lName.toStdString();
-//                }
-//            }
-//        } else if(vcProperty.name() == VC_FORMATTED_NAME) {
-//            // not nice but there are entries in my carddav server
-//            // who dont have a N (i.e. VC_NAME property containing firstname and lastname separately)
-//            // but instead have only the formatted name property. So i will split this string
-//            // on each whitespace and combine it somewhat friendly... But what about a title?
-//            if(p->FirstName.size() == 0 || p->LastName.size() == 0) {
-//                QString formattedName = vcProperty.values().at(0);
-//                if(formattedName.isNull() || formattedName.isEmpty()) {
-//                    cerr << "There is no vcard property at index 0. Therefore I cant read the value of formatted name (FN)." << endl;
-//                } else {
-//                    QStringList tokens = formattedName.split(QRegExp("\\s"));
-//                    if(!tokens.isEmpty() && tokens.size() == 2) {
-//                        p->FirstName = tokens.at(0).toStdString();
-//                        p->LastName = tokens.at(1).toStdString();
-//                    } else {
-//                        cerr << "VCard property 'FN' contains invalid value(s): more then 2 tokens or none at all!: " << formattedName.toStdString() << endl;
-//                    }
-//                }
-//            }
-//        } else if (vcProperty.name() == VC_REVISION) {
-//            // append updated_at to the person
-//            QStringList revs = vcProperty.values();
-//            if(!revs.empty()) {
-//                p->lastUpdatedAt = revs.at(0).toStdString();
-//            }
-//        }
+    vCardPropertyList vcPropertyList = vcdata->properties();
 
-//        if(false == exportMode) {
-//            std::vector<std::string> emails = p->Emails;
-//            if(emails.size() > 1) {
-//                int counter = 0;
-//                foreach(std::string email, emails) {
-//                    unsigned long match = email.find(_rawQuery );
-//                    if( match != std::string::npos ) {
-//                        p->Emails.erase(p->Emails.begin() + counter);
-//                    }
-//                    counter++;
-//                }
-//            }
-//        }
-//    }
+    for(vCardPropertyList::const_iterator it = vcPropertyList.begin(); it != vcPropertyList.end(); ++it ) {
+        vCardProperty vcProperty(*it);
+        std::string vcName(vcProperty.name());
+
+        if(vcName == VC_EMAIL) {
+            std::vector<std::string> emails = vcProperty.values();
+            for(std::vector<std::string>::const_iterator it = emails.begin(); it != emails.end(); ++it) {
+                std::string email(*it);
+                p->Emails.push_back(email);
+            }
+        } else if(vcName == VC_NAME) {
+            std::vector<std::string> values = vcProperty.values();
+            if (!values.empty()) {
+                std::string fName = values.at(vCardProperty::Firstname);
+                std::string lName = values.at(vCardProperty::Lastname);
+                if(!fName.size() == 0 && !fName.size() == 0) {
+                    p->FirstName = fName;
+                    p->LastName = lName;
+                }
+            }
+        } else if(vcName == VC_FORMATTED_NAME) {
+            // not nice but there are entries in my carddav server
+            // who dont have a N (i.e. VC_NAME property containing firstname and lastname separately)
+            // but instead have only the formatted name property. So i will split this string
+            // on each whitespace and combine it somewhat friendly... But what about a title?
+            if(p->FirstName.size() == 0 || p->LastName.size() == 0) {
+                std::string formattedName = vcProperty.values().at(0);
+                if(formattedName.size() == 0) {
+                    cerr << "There is no vcard property at index 0. Therefore I cant read the value of formatted name (FN)." << endl;
+                } /*else {
+                    std::vector<std::string> tokens;
+                    QStringList tokens = formattedName.split(QRegExp("\\s"));
+                    if(!tokens.isEmpty() && tokens.size() == 2) {
+                        p->FirstName = tokens.at(0).toStdString();
+                        p->LastName = tokens.at(1).toStdString();
+                    } else {
+                        cerr << "VCard property 'FN' contains invalid value(s): more then 2 tokens or none at all!: " << formattedName.toStdString() << endl;
+                    }
+                }*/
+            }
+        } else if (vcName == VC_REVISION) {
+            // append updated_at to the person
+            std::vector<std::string> revs = vcProperty.values();
+            if(!revs.size() == 0) {
+                p->lastUpdatedAt = revs.at(0);
+            }
+        }
+
+        if(false == exportMode) {
+            std::vector<std::string> emails = p->Emails;
+            if(emails.size() > 1) {
+                int counter = 0;
+                for(std::vector<std::string>::const_iterator it = emails.begin(); it != emails.end(); ++it) {
+                    std::string email(*it);
+                    size_t match = email.find(_rawQuery, 0);
+                    if( match != std::string::npos ) {
+                        p->Emails.erase(p->Emails.begin() + counter);
+                    }
+                    counter++;
+                }
+            }
+        }
+    }
 }
 
 /*

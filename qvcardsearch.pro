@@ -18,7 +18,7 @@
 # *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
 # ***************************************************************************/
 
-QT       += core
+QT       -= core
 QT       -= gui
 
 TARGET = muttvcardsearch
@@ -46,7 +46,7 @@ SOURCES += main.cpp \
     vCard/vcardproperty.cpp \
     vCard/strutils.cpp
 
-LIBS += -lcurl -lvcard -lsqlite3
+LIBS += -lcurl -lsqlite3
 
 HEADERS += \
     cardcurler.h \
