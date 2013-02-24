@@ -369,6 +369,7 @@ std::vector<Person> CardCurler::curlCard(const std::string &query) {
     if(http_result.find("<C:address-data>") != std::string::npos) {
         vcardAddressBeginToken = "<C:address-data>";
         vcardAddressEndToken   = "</C:address-data>";
+        isSOGO = true;
     }
 
     std::vector<std::string> list = StringUtils::split(http_result, vcardAddressBeginToken);
