@@ -20,9 +20,10 @@ After that set your query command in your .muttrc
 * `set query_command = "muttvcardsearch '%s'"`
 
 If you like to have your data cached locally use *--create-local-cache* as the first and only option.
-This will download all your contacts into ~/.config/muttvcardsearch/cache.dat which is
-a simple textfile containing your vcards. A new search should then search the local cache first
-and if your query does not return any data it will search the server.
+This will download all your contacts into ~/.config/muttvcardsearch/cache.sqlite3. A new search should
+then search the local cache first and if your query does not return any data it will search the server.
+
+The utility will automatically insert new records not found in the cache but found online.
 
 TODO
 ------------
