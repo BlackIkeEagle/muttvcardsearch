@@ -1,4 +1,5 @@
 #include "vCard/vcardparam.h"
+#include "vCard/strutils.h"
 
 #define VC_GROUP_TOKEN "%1=%2"
 #define VC_TYPE_TOKEN "TYPE"
@@ -167,26 +168,39 @@ std::string vCardParam::toString(std::vector<vCardParam> params, vCardVersion ve
 
 std::vector<vCardParam> vCardParam::fromString(const std::string& data)
 {
-    return std::vector<vCardParam>();
-//    QList<vCardParam> params;
+    // resultset
+    std::vector<vCardParam> params;
 
-//    QStringList tokens = QString::fromUtf8(data).simplified().split(VC_SEPARATOR_TOKEN);
-//    foreach (QString token, tokens)
-//    {
-//	int token_size = token.count();
-//        if (token.startsWith(VC_TYPE_TOKEN))
-//            foreach (QString type, token.right(token_size-5).split(VC_TYPE_SEP_TOKEN))
-//                params.append(vCardParam(type, vCardParam::Type));
+    std::string vcTypeToken(VC_TYPE_TOKEN);
+    std::string vcEncodingToken(VC_ENCODING_TOKEN);
+    std::string vcCharsetToken(VC_CHARSET_TOKEN);
 
-//        else if (token.startsWith(VC_ENCODING_TOKEN))
-//            params.append(vCardParam(token.right(token_size-9), vCardParam::Encoding));
+    std::string tmp = StrUtils::simplify(data);
+    std::vector<std::string> tokens;
 
-//        else if (token.startsWith(VC_CHARSET_TOKEN))
-//            params.append(vCardParam(token.right(token_size-8), vCardParam::Charset));
+    StrUtils::split(&tokens, tmp, VC_SEPARATOR_TOKEN);
+    for (std::vector<std::string>::iterator it = tokens.begin() ; it != tokens.end(); ++it) {
+        std::string token(*it);
 
-//        else
-//            params.append(vCardParam(token));
-//    }
 
-//    return params;
+        if(StrUtils::startWith(token, VC_TYPE_TOKEN)) {
+            std::string type = token.substr(vcTypeToken.size() + 1 );
+            params.push_back(vCardParam(type, vCardParam::Type));
+        }
+
+        else if(StrUtils::startWith(token, VC_ENCODING_TOKEN)) {
+            std::string type = token.substr(vcEncodingToken.size() + 1 );
+            params.push_back(vCardParam(type, vCardParam::Encoding));
+        }
+
+        else if(StrUtils::startWith(token, VC_CHARSET_TOKEN)) {
+            std::string type = token.substr(vcCharsetToken.size() + 1 );
+            params.push_back(vCardParam(type, vCardParam::Charset));
+        }
+
+        else
+            params.push_back(vCardParam(token));
+    }
+
+    return params;
 }

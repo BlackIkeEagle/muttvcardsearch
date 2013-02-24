@@ -1,4 +1,5 @@
 #include "vCard/vcard.h"
+#include "vCard/strutils.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -141,7 +142,7 @@ int vCard::count() const
 
 std::string vCard::toString(vCardVersion version) const
 {
-    std::list<std::string> lines;
+    std::vector<std::string> lines;
     lines.push_back(VC_BEGIN_TOKEN);
 
     switch (version)
@@ -170,9 +171,9 @@ std::string vCard::toString(vCardVersion version) const
 }
 
 
-std::list<vCard> vCard::fromString(const std::string& data)
+std::vector<vCard> vCard::fromString(const std::string& data)
 {
-    std::list<vCard> vcards;
+    std::vector<vCard> vcards;
     std::string beginToken (VC_BEGIN_TOKEN);
     std::string endToken (VC_END_TOKEN);
 
@@ -186,14 +187,40 @@ std::list<vCard> vCard::fromString(const std::string& data)
 
         // extract the current vcard string
         std::string vcard = tmp.substr(0, pos + endToken.size());
+
         if(vcard.size() > 0) {
-            std::string line;
+            std::string line, tmpLine;
             std::stringstream ss(vcard);
 
             vCard current;
+            bool first = true;
+
+            // REMEMBER: binary data seem to have a fixed line each separated
+            // by '\n' and start with a blank sign. So before we add a new
+            // property to the current card we iterate to the next line and
+            // check if it starts with a single space. We then append this
+            // line to the end of the previous one and start over with the next line.
             while(std::getline(ss, line)) {
-                vCardPropertyList props = vCardProperty::fromString(line);
-                current.addProperties(props);
+                if(first) {
+                    tmpLine = line;
+                    first = false;
+                } else {
+                    if(StrUtils::startWith(line, " ")) {
+                        tmpLine.append(line.data());
+                    } else {
+                        // write the last line
+                        vCardPropertyList props = vCardProperty::fromString(tmpLine);
+                        current.addProperties(props);
+
+                        // create the property for the current line which MUST
+                        // be different from the previous one.
+                        props = vCardProperty::fromString(line);
+                        current.addProperties(props);
+
+                        // temporary save the next line again, i.e. skip the parent ELSE
+                        first = true;
+                    }
+                }
             }
 
             current.setRawData(vcard);
@@ -209,13 +236,13 @@ std::list<vCard> vCard::fromString(const std::string& data)
    return vcards;
 }
 
-std::list<vCard> vCard::fromFile(const std::string& filename)
+std::vector<vCard> vCard::fromFile(const std::string& filename)
 {
     std::ifstream ifs;
     ifs.open(filename.c_str());
 
     if( !ifs.is_open() ) {
-        return std::list<vCard>();
+        return std::vector<vCard>();
     }
 
     std::stringstream buffer;

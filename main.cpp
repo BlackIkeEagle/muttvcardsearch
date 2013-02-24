@@ -69,7 +69,8 @@ void printError(const std::string &detail) {
 
 int main(int argc, char *argv[])
 {
-    std::list<vCard> list = vCard::fromFile("/home/archie/source/vcards.txt");
+    std::vector<vCard> list = vCard::fromFile("/home/archie/source/vcards.txt");
+    return 0;
 
     Settings cfg;
     Option opt(argc, argv);

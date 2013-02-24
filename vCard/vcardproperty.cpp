@@ -1,4 +1,5 @@
 #include "vCard/vcardproperty.h"
+#include "vCard/strutils.h"
 #include <fstream>
 #include <sstream>
 
@@ -10,7 +11,7 @@ vCardProperty::vCardProperty(const std::string& name, const std::string& value, 
     :   m_name(name),
         m_params(params)
 {
-    //m_values = value.split(VC_SEPARATOR_TOKEN);
+    StrUtils::split(&m_values, value, VC_SEPARATOR_TOKEN);
 }
 
 vCardProperty::vCardProperty(const std::string& name, const std::vector< std::string >& values, const vCardParamList& params)
@@ -23,15 +24,15 @@ vCardProperty::vCardProperty(const std::string& name, const std::vector< std::st
 vCardProperty::vCardProperty(const std::string& name, const std::string& value, const std::string& params)
     :   m_name(name)
 {
-//    m_values = value.split(VC_SEPARATOR_TOKEN);
-//    m_params = vCardParam::fromByteArray(params.toUtf8());
+    StrUtils::split(&m_values, value, VC_SEPARATOR_TOKEN);
+    m_params = vCardParam::fromString(params);
 }
 
 vCardProperty::vCardProperty(const std::string& name, const std::vector< std::string >& values, const std::string& params)
     :   m_name(name),
         m_values(values)
 {
-    //m_params = vCardParam::fromByteArray(params.toUtf8());
+    m_params = vCardParam::fromString(params);
 }
 
 vCardProperty::~vCardProperty()
@@ -45,8 +46,7 @@ std::string vCardProperty::name() const
 
 std::string vCardProperty::value() const
 {
-    return std::string();
-    //return m_values.join(QString(VC_SEPARATOR_TOKEN));
+    return StrUtils::join(&m_values, VC_SEPARATOR_TOKEN);
 }
 
 std::vector<std::string> vCardProperty::values() const
@@ -61,15 +61,16 @@ vCardParamList vCardProperty::params() const
 
 bool vCardProperty::isValid() const
 {
-//    if (m_name.isEmpty())
-//        return false;
+    if(m_name.size() == 0)
+        return false;
 
-//    if (m_values.isEmpty())
-//        return false;
+    if(m_values.empty())
+        return false;
 
-//    foreach (vCardParam param, m_params)
-//        if (!param.isValid())
-//            return false;
+    for (unsigned int i=0; i<m_params.size(); i++) {
+        if (!m_params.at(i).isValid())
+            return false;
+    }
 
     return true;
 }
@@ -121,48 +122,40 @@ std::vector<vCardProperty> vCardProperty::fromString(const std::string& data)
 
     std::string line;
     std::stringstream ss(data);
-
     while(std::getline(ss, line)) {
         if (line == VC_BEGIN_TOKEN || line == VC_END_TOKEN)
             break;
 
-        size_t pos = data.find(VC_ASSIGNMENT_TOKEN, 0);
-        if(pos != std::string::npos) {
-            std::string name   = data.substr(0, pos);
-            std::string params = data.substr(pos+1);
+        // tokens conatins a pair of key and value per line
+        std::pair<std::string, std::string> tokens = StrUtils::simpleSplit(line,VC_ASSIGNMENT_TOKEN);
+        if(tokens.first.size() == 0 && tokens.second.size() == 0)
+            break;
 
-            if(name != VC_VERSION) {
-                vCardParamList paramList = vCardParam::fromString(params);
-                properties.push_back(vCardProperty(name, params, paramList));
+        // check if the name has params
+        bool hasModifiers = false;
+        std::string paramName = tokens.first;
+        size_t pos = tokens.first.find(VC_SEPARATOR_TOKEN, 0);
+        if(pos != std::string::npos) { // not a single param name without modifiers
+            paramName = tokens.first.substr(0, pos);
+            hasModifiers = true;
+        }
+
+        // the value after the first occurance of VC_ASSIGNMENT_TOKEN
+        std::string paramValue = tokens.second;
+
+        if (paramName != VC_VERSION) {
+            if(hasModifiers == false) { // there are no properties in the patameterName, like "FN:John Doe"
+                properties.push_back( vCardProperty(paramName, paramValue) );
+            }
+
+            else {
+                vCardParamList paramList = vCardParam::fromString(tokens.first.substr(pos+1));
+                properties.push_back( vCardProperty(paramName, paramValue, paramList) );
             }
         }
     }
 
     return properties;
-//    std::vector<vCardProperty> properties;
-
-//    std::vector<std::string> lines = QString::fromUtf8(data).split(VC_END_LINE_TOKEN);
-//    foreach (QString line, lines)
-//    {
-//        if (line == VC_BEGIN_TOKEN || line == VC_END_TOKEN)
-//            break;
-
-//        QStringList tokens = line.split(VC_ASSIGNMENT_TOKEN);
-//        if (tokens.count() >= 2)
-//        {
-//            QStringList property_tokens = tokens.at(0).split(VC_SEPARATOR_TOKEN);
-//            QString name = property_tokens.takeAt(0);
-
-//            if (name != VC_VERSION)
-//            {
-//                vCardParamList params = vCardParam::fromByteArray(property_tokens.join(QString(VC_SEPARATOR_TOKEN)).toUtf8());
-
-//                properties.append(vCardProperty(name, tokens.at(1), params));
-//            }
-//        }
-//    }
-
-//    return properties;
 }
 
 vCardProperty vCardProperty::createAddress(const std::string& street, const std::string& locality, const std::string& region, const std::string& postal_code, const std::string& country, const std::string& post_office_box, const std::string& ext_address, const vCardParamList& params)

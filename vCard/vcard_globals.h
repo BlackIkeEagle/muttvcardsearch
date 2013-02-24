@@ -3,6 +3,7 @@
 
 #define VC_ASSIGNMENT_TOKEN ':'
 #define VC_SEPARATOR_TOKEN ';'
+#define VC_TYPE_ASSIGNMENT_TOKEN '='
 #define VC_END_LINE_TOKEN '\n'
 #define VC_BEGIN_TOKEN "BEGIN:VCARD"
 #define VC_END_TOKEN "END:VCARD"

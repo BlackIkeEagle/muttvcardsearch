@@ -3,7 +3,6 @@
 
 #include <string>
 #include <vector>
-#include <list>
 #include "vcardproperty.h"
 
 class vCard
@@ -32,8 +31,8 @@ public:
     int count() const;
     std::string toString(vCardVersion version = VC_VER_2_1) const;
 
-    static std::list<vCard> fromString(const std::string& data);
-    static std::list<vCard> fromFile(const std::string& filename);
+    static std::vector<vCard> fromString(const std::string& data);
+    static std::vector<vCard> fromFile(const std::string& filename);
 };
 
 typedef std::vector<vCard> vCardList;
