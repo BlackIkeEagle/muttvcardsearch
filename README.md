@@ -1,15 +1,13 @@
 muttvcardsearch
 ============
 
-A small mutt carddav search utility for your Owncloud or SOGo server using QT and libvard
+A small mutt carddav search utility for your Owncloud or SOGo server
 
 INSTALL
 ------------
 first, install
-* libcurl (installed by default on many linux and/or BSD distributions)
-* sqlite3
-* libvcard
-* QT (requiered by libvcard)
+* libcurl / libcurl-dev
+* sqlite3 / sqlite3-dev
 
 then
 
@@ -30,7 +28,6 @@ TODO
 ------------
 * add option to refresh the cache instead of redownload it every time you made a change on your server
 * add option to save a contact into your vcard store (just like abook)
-* remove libvcard to get rid of QT
 
 PS:
 ------------
