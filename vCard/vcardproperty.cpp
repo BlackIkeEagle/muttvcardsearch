@@ -25,6 +25,9 @@
 #include "vCard/strutils.h"
 #include <fstream>
 #include <sstream>
+#include <ctime>
+#include <time.h>
+#include <iomanip>
 
 vCardProperty::vCardProperty()
 {
@@ -197,24 +200,35 @@ vCardProperty vCardProperty::createAddress(const std::string& street, const std:
     return vCardProperty(VC_ADDRESS, values, params);
 }
 
-//vCardProperty vCardProperty::createBirthday(const QDate& birthday, const vCardParamList& params)
-//{
-//    return vCardProperty(VC_BIRTHDAY, birthday.toString("yyyy-MM-dd"), params);
-//}
+vCardProperty vCardProperty::createBirthday(const time_t& birthday, const vCardParamList& params)
+{
+    time_t bday(birthday);
+    struct tm *tm = localtime(&bday);
 
-//vCardProperty vCardProperty::createBirthday(const QDateTime& birthday, const vCardParamList& params)
-//{
-//    return vCardProperty(VC_BIRTHDAY, birthday.toString("yyyy-MM-ddThh:mm:ssZ"), params);
-//}
+    std::stringstream ss;
+    ss  << tm->tm_year
+        << "-"
+        << std::setw(2)
+        << std::setfill('0')
+        << tm->tm_mon
+        << "-"
+        << std::setw(2)
+        << std::setfill('0')
+        << tm->tm_mday;
 
-//vCardProperty vCardProperty::createGeographicPosition(qreal latitude, qreal longitude, const vCardParamList& params)
-//{
+    return vCardProperty(VC_BIRTHDAY, ss.str(), params);
+}
+
+vCardProperty vCardProperty::createGeographicPosition(const std::complex& latitude, const std::complex& longitude, const vCardParamList& params)
+{
+    std::vector<std::string> values;
+    values.insert(vCardProperty::Latitude, std::string(std::real(latitude)));
 //    QStringList values;
 //    values.insert(vCardProperty::Latitude, QString("%1").arg(latitude));
 //    values.insert(vCardProperty::Longitude, QString("%1").arg(longitude));
 
 //    return vCardProperty(VC_GEOGRAPHIC_POSITION, values, params);
-//}
+}
 
 vCardProperty vCardProperty::createName(const std::string& firstname, const std::string& lastname, const std::string& additional, const std::string& prefix, const std::string& suffix, const vCardParamList& params)
 {

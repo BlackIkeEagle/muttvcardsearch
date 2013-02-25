@@ -527,6 +527,12 @@ void CardCurler::fixHtml(string* data) {
     StringUtils::replace(data, "&#255;", "ÿ");;
 }
 
+/*
+ * The following helpers where copied from the internet.
+ * These functions are duplications in itself. SO CLEANUP, STUPID!
+ * I don't know any of those copyright owners. Sorry for that.
+ */
+
 void CardCurler::init_vcard(vcdata *vc) {
     vc->len = 0;
     vc->ptr = (char*)malloc(vc->len+1);
