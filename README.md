@@ -3,13 +3,14 @@ muttvcardsearch
 
 ABOUT
 ------------
-muttvcardsearch is a small mutt carddav search utility for your Owncloud or SOGo server
-written in C++ and depends only on libcurl and sqlite3.
+muttvcardsearch is a small mutt carddav search utility for your Owncloud or SOGo server.
+It is written in C++ and depends *only* on [libcurl](http://curl.haxx.se/libcurl/) and [sqlite3](http://www.sqlite.org/).
 
-The vcard code is entirely based on libvcard, but does not need QT and also fixes some
+The vcard code is entirely based on [libvcard](http://code.google.com/p/libvcard), but does not need QT and also fixes some
 major bugs I found in [libvcard](http://code.google.com/p/libvcard/) (parsing vcards from file,
 parsing attribute values containing a colon...). It is not feature complete, i.e. not
 all functions from *libvcard* are implemented at this time but it works quiet well for me.
+I plan to implement all features from the original *libvcard*-library (currently 1.0.2).
 
 I wrote *muttvcardsearch* using QtCreator, so currently you will need Qt to **build** the project
 but not to run it. I plan to support *cmake* too, so stay tuned ;)
