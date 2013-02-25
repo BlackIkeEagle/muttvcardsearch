@@ -7,8 +7,8 @@ class SearchTemplates
 {
 public:
     SearchTemplates();
-    std::string getExportTemplate() const;
-    std::string getSearchTemplate() const;
+    std::string getDefaultExportTemplate() const;
+    std::string getDefaultSearchTemplate() const;
 
 private:
     std::string exportTemplate;

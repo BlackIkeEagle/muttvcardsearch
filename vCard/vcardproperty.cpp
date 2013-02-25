@@ -219,16 +219,16 @@ vCardProperty vCardProperty::createBirthday(const time_t& birthday, const vCardP
     return vCardProperty(VC_BIRTHDAY, ss.str(), params);
 }
 
-vCardProperty vCardProperty::createGeographicPosition(const std::complex& latitude, const std::complex& longitude, const vCardParamList& params)
-{
-    std::vector<std::string> values;
-    values.insert(vCardProperty::Latitude, std::string(std::real(latitude)));
+//vCardProperty vCardProperty::createGeographicPosition(const std::complex& latitude, const std::complex& longitude, const vCardParamList& params)
+//{
+//    std::vector<std::string> values;
+//    values.insert(vCardProperty::Latitude, std::string(std::real(latitude)));
 //    QStringList values;
 //    values.insert(vCardProperty::Latitude, QString("%1").arg(latitude));
 //    values.insert(vCardProperty::Longitude, QString("%1").arg(longitude));
 
 //    return vCardProperty(VC_GEOGRAPHIC_POSITION, values, params);
-}
+//}
 
 vCardProperty vCardProperty::createName(const std::string& firstname, const std::string& lastname, const std::string& additional, const std::string& prefix, const std::string& suffix, const vCardParamList& params)
 {

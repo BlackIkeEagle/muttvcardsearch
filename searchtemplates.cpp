@@ -29,10 +29,10 @@ SearchTemplates::SearchTemplates()
     searchTemplate += "</C:addressbook-query>";
 }
 
-std::string SearchTemplates::getExportTemplate() const {
+std::string SearchTemplates::getDefaultExportTemplate() const {
     return exportTemplate;
 }
 
-std::string SearchTemplates::getSearchTemplate() const {
+std::string SearchTemplates::getDefaultSearchTemplate() const {
     return searchTemplate;
 }

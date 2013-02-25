@@ -119,7 +119,7 @@ public:
 
     static vCardProperty createAddress(const std::string& street, const std::string& locality, const std::string& region, const std::string& postal_code, const std::string& country, const std::string& post_office_box = "", const std::string& ext_address = "", const vCardParamList& params = vCardParamList());
     static vCardProperty createBirthday(const time_t& birthday, const vCardParamList& params = vCardParamList());
-    static vCardProperty createGeographicPosition(const std::complex& latitude, const std::complex& longitude, const vCardParamList& params = vCardParamList());
+    //static vCardProperty createGeographicPosition(const std::complex& latitude, const std::complex& longitude, const vCardParamList& params = vCardParamList());
     static vCardProperty createName(const std::string& firstname, const std::string& lastname, const std::string& additional = "", const std::string& prefix = "", const std::string& suffix = "", const vCardParamList& params = vCardParamList());
     //static vCardProperty createOrganization(const std::string& name, const std::vector<std::string>& levels = std::vector<std::string>(), const vCardParamList& params = vCardParamList());
 };

@@ -125,9 +125,9 @@ int main(int argc, char *argv[])
     // preset search template
     bool doCache = false;
 
-    std::string query = st.getSearchTemplate();
+    std::string query = st.getDefaultSearchTemplate();
     if(opt.hasOption("--create-local-cache")) {
-        query = st.getExportTemplate();
+        query = st.getDefaultExportTemplate();
 
         // overwrite the default export template with one the user provided
         std::string templateFile = FileUtils::getHomeDir() + "/" + cfg.getConfigDir() + "/export.xml";
