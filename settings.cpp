@@ -74,14 +74,17 @@ Settings::~Settings() {
         if(o.is_open()) {
             CfgMap::iterator end = cfg.end();
             for (CfgMap::const_iterator it = cfg.begin(); it != end; ++it) {
-                o << "[" << it->first << "]" << endl;
+                std::string section(it->first);
+                if(section.size() != 0) {
+                    o << "[" << section << "]" << endl;
 
-                std::map <std::string, std::string> m = it->second;
-                for(std::map <std::string, std::string>::iterator _it = m.begin(); _it != m.end(); _it++) {
-                    o << _it->first << "=" << _it->second << endl;
+                    std::map <std::string, std::string> m = it->second;
+                    for(std::map <std::string, std::string>::iterator _it = m.begin(); _it != m.end(); _it++) {
+                        o << _it->first << "=" << _it->second << endl;
+                    }
+
+                    o << endl;
                 }
-
-                o << endl;
             }
 
             o.close();

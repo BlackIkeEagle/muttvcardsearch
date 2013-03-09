@@ -77,12 +77,12 @@ bool Option::doConfig() {
 }
 
 void Option::configure() {
-    std::string section;
+    // for the name option set the section!
+    std::string section = this->getOption("--name");
+    _cfg.setSection(section);
 
-    std::string tmp = this->getOption("--name");
-    _cfg.setSection(tmp);
-
-    tmp = this->getOption("--server");
+    // for the rest call setProperty
+    std::string tmp = this->getOption("--server");
     _cfg.setProperty(section, "server", tmp);
 
     tmp = this->getOption("--username");
