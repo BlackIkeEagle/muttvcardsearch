@@ -212,40 +212,34 @@ std::vector<vCard> vCard::fromString(const std::string& data)
         std::string vcard = tmp.substr(0, pos + endToken.size());
 
         if(vcard.size() > 0) {
-            std::string line, tmpLine;
+            std::string line;
             std::stringstream ss(vcard);
 
             vCard current;
-            bool first = true;
 
             // REMEMBER: binary data seem to have a fixed line each separated
-            // by '\n' and start with a blank sign. So before we add a new
+            // by '\n' and start with whitespace. So before we add a new
             // property to the current card we iterate to the next line and
             // check if it starts with a single space. We then append this
             // line to the end of the previous one and start over with the next line.
+            std::string lastLine = "";
             while(std::getline(ss, line)) {
-                if(first) {
-                    tmpLine = line;
-                    first = false;
+                if(lastLine.size() == 0) {
+                    lastLine = line; // remember first line and goto second
+                    continue;
+                }
+
+                if(StrUtils::startWith(line, " ")) { // should be a regex!
+                    lastLine.append(StrUtils::ltrim(line));
                 } else {
-                    if(StrUtils::startWith(line, " ")) {
-                        tmpLine.append(line.data());
-                    } else {
-                        // write the last line
-                        vCardPropertyList props = vCardProperty::fromString(tmpLine);
-                        current.addProperties(props);
-
-                        // create the property for the current line which MUST
-                        // be different from the previous one.
-                        props = vCardProperty::fromString(line);
-                        current.addProperties(props);
-
-                        // temporary save the next line again, i.e. skip the parent ELSE
-                        first = true;
-                    }
+                    vCardPropertyList props = vCardProperty::fromString(lastLine);
+                    current.addProperties(props);
+                    lastLine = line;
                 }
             }
 
+            vCardPropertyList props = vCardProperty::fromString(lastLine);
+            current.addProperties(props);
             current.setRawData(vcard);
 
             if(current.isValid())
