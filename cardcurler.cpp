@@ -203,7 +203,7 @@ void CardCurler::createPerson(const vCard *vcdata, Person *p) {
             }
         } else if(vcName == VC_NAME) {
             std::vector<std::string> values = vcProperty.values();
-            if (!values.empty()) {
+            if (values.size() >= 2) { // at least firstname and lastname should be there
                 std::string fName = values.at(vCardProperty::Firstname);
                 std::string lName = values.at(vCardProperty::Lastname);
                 if(!fName.size() == 0 && !fName.size() == 0) {
@@ -217,20 +217,27 @@ void CardCurler::createPerson(const vCard *vcdata, Person *p) {
             // but instead have only the formatted name property. So i will split this string
             // on each whitespace and combine it somewhat friendly... But what about a title?
             if(p->FirstName.size() == 0 || p->LastName.size() == 0) {
-                std::string formattedName = vcProperty.values().at(0);
-                if(formattedName.size() == 0) {
-                    std::cerr << "There is no vcard property at index 0. Therefore I can't read the value of formatted name (FN)." << endl;
-                } else {
-                    std::vector<std::string> tokens;
-                    formattedName = StrUtils::simplify(formattedName); // remove doubled whitespace
-                    formattedName = StrUtils::trim(formattedName); // remove leading and trailing whitespace
-                    StrUtils::split(&tokens, formattedName, ' ');
-                    if(tokens.size() == 2) {
-                        p->FirstName = tokens.at(0);
-                        p->LastName = tokens.at(1);
+                if(vcProperty.values().size() > 0) {
+                    std::string formattedName = vcProperty.values().at(0);
+                    if(formattedName.size() == 0) {
+                        std::cerr << "There is no vcard property at index 0. Therefore I can't read the value of formatted name (FN)." << endl;
                     } else {
-                        cerr << "VCard property 'FN' contains invalid value(s): more then 2 tokens or none at all!: " << formattedName << endl;
+                        std::vector<std::string> tokens;
+                        formattedName = StrUtils::simplify(formattedName); // remove doubled whitespace
+                        formattedName = StrUtils::trim(formattedName); // remove leading and trailing whitespace
+                        StrUtils::split(&tokens, formattedName, ' ');
+                        if( tokens.size() == 1 ) {
+                            p->LastName = tokens.at(0);
+                        }
+                        else if( tokens.size() >= 2 ) {
+                            p->FirstName = tokens.at(0);
+                            p->LastName = tokens.at(1);
+                        } else {
+                            std::cerr << "VCard property 'FN' contains invalid value(s): more then 2 tokens or none at all!: " << formattedName << std::endl;
+                        }
                     }
+                } else {
+                    std::cerr << "VCard has no values for property 'N'' and there are also no values for property 'FN'" << std::endl;
                 }
             }
         } else if (vcName == VC_REVISION) {
