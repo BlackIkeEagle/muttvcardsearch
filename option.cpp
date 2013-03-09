@@ -20,10 +20,11 @@
 
 #include "option.h"
 
-Option::Option(int argc, char **argv)
+Option::Option(int argc, char **argv, Settings *cfg)
 {
     _argc = argc;
     _argv = argv;
+    _cfg = *cfg;
 }
 
 bool Option::isVerbose() {
@@ -60,40 +61,38 @@ std::string Option::getOption(const std::string &option) {
 }
 
 bool Option::doConfig() {
-    if(_argc == 4) {
-        std::string tmp;
+    std::string tmp = this->getOption("--name");
+    if(tmp.length() == 0) return false;
 
-        tmp = this->getOption("--server");
-        if(!tmp.length() <= 0) {
-            cfg.setProperty("server", tmp);
-        } else {
-            std::cerr << "property --server=xxx missing" << std::endl;
-            return false;
-        }
+    tmp = this->getOption("--server");
+    if(tmp.length() == 0) return false;
 
-        tmp = this->getOption("--username");
-        if(!tmp.length() <= 0) {
-            cfg.setProperty("username", tmp);
-        } else {
-            std::cerr << "property --username=xxx missing" << std::endl;
-            return false;
-        }
+    tmp = this->getOption("--username");
+    if(tmp.length() == 0) return false;
 
-        tmp = this->getOption("--password");
-        if(!tmp.length() <= 0) {
-            cfg.setProperty("password", tmp);
-        } else {
-            std::cerr << "property --password=xxx missing" << std::endl;
-            return false;
-        }
+    tmp = this->getOption("--password");
+    if(tmp.length() == 0) return false;
 
-        // chmod go-a to the config file, ignore the results
-        chmod(cfg.getConfigDir().c_str(), S_IRUSR | S_IWUSR | S_IXUSR);
-        chmod(cfg.getConfigFile().c_str(), S_IRUSR | S_IWUSR);
+    return true;
+}
 
-        return true;
-    }
+void Option::configure() {
+    std::string section;
 
-    return false;
+    std::string tmp = this->getOption("--name");
+    _cfg.setSection(tmp);
+
+    tmp = this->getOption("--server");
+    _cfg.setProperty(section, "server", tmp);
+
+    tmp = this->getOption("--username");
+    _cfg.setProperty(section, "username", tmp);
+
+    tmp = this->getOption("--password");
+    _cfg.setProperty(section, "password", tmp);
+
+    // chmod go-a to the config file, ignore the results
+    chmod(_cfg.getConfigDir().c_str(), S_IRUSR | S_IWUSR | S_IXUSR);
+    chmod(_cfg.getConfigFile().c_str(), S_IRUSR | S_IWUSR);
 }
 

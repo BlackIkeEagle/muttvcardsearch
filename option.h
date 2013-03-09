@@ -29,16 +29,17 @@
 class Option
 {
 public:
-    Option(int argc, char **argv);
+    Option(int argc, char **argv, Settings* cfg);
     std::string getOption(const std::string &option);
     bool hasOption(const std::string &option);
+    void configure();
     bool doConfig();
     static bool isVerbose();
 
 private:
     int _argc;
     char **_argv;
-    Settings cfg;
+    Settings _cfg;
 };
 
 #endif // OPTION_H

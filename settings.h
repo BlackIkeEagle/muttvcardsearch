@@ -27,15 +27,16 @@
 
 #define CONFIG_DIR ".config/muttvcardsearch"
 #define CONFIG_FILE "muttvcardsearch.conf"
-typedef std::map <std::string, std::string> CfgMap;
+typedef std::map <std::string, std::map <std::string, std::string> > CfgMap;
 
 class Settings
 {
 public:
     Settings();
     ~Settings();
-    void setProperty(std::string key, std::string& value);
-    std::string getProperty(const std::string &key);
+    void setSection(const std::string& section);
+    void setProperty(const std::string& section, std::string key, std::string& value);
+    std::string getProperty(const std::string& section, const std::string &key);
     const std::string getCacheFile();
     const std::string getConfigDir();
     const std::string getConfigFile();

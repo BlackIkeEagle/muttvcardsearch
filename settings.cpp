@@ -32,16 +32,34 @@ Settings::Settings() {
 
     if(f.is_open()) {
         int numSettings = 0; // we have 3
+        std::string section;
+        bool enterSection = false; // only valid for the first section
         while(getline(f, line)) {
-            std::vector<std::string> tokens = StringUtils::split(line, "=");
-            if(tokens.size() == 2) {
-                cfg[tokens.at(0)] = tokens.at(1);
-                numSettings++;
+            if(StringUtils::startsWith(line, "[") && StringUtils::endsWith(line, "]")) {
+                std::string s1 = line.substr(1);
+                std::string s2 = s1.substr(0, s1.length()-1);
+                section = s2;
+
+                std::map< std::string, std::string > _line;
+                cfg[section] = _line;
+
+                enterSection = true; // at least one section was found
+
+            } else {
+                if(enterSection == false) continue;
+
+                std::vector<std::string> tokens = StringUtils::split(line, "=");
+                if(tokens.size() == 2) {
+                    std::map< std::string, std::string > _map = cfg[section];
+                    _map.insert(std::pair<std::string, std::string>(tokens.at(0), tokens.at(1)));
+                    cfg[section] = _map;
+                    numSettings++;
+                }
             }
         }
         f.close();
 
-        if(numSettings == 3)
+        if( numSettings > 0 && (numSettings % 3) == 0)
             valid = true;
     }
 }
@@ -54,7 +72,14 @@ Settings::~Settings() {
         if(o.is_open()) {
             CfgMap::iterator end = cfg.end();
             for (CfgMap::const_iterator it = cfg.begin(); it != end; ++it) {
-                o << it->first << "=" << it->second << endl;
+                o << "[" << it->first << "]" << endl;
+
+                std::map <std::string, std::string> m = it->second;
+                for(std::map <std::string, std::string>::iterator _it = m.begin(); _it != m.end(); _it++) {
+                    o << _it->first << "=" << _it->second << endl;
+                }
+
+                o << endl;
             }
 
             o.close();
@@ -71,16 +96,25 @@ bool Settings::isValid() {
     return valid;
 }
 
-void Settings::setProperty(std::string key, std::string &value) {
-    cfg[key] = value;
+void Settings::setSection(const string &section) {
+    std::map <std::string, std::string> m;
+    cfg[section] = m;
+}
+
+void Settings::setProperty(const std::string &section, std::string key, std::string &value) {
+    std::map <std::string, std::string> m = cfg[section];
+    m[key] = value;
+    cfg[section] = m;
     changed = true;
 }
 
-std::string Settings::getProperty(const std::string& key) {
+std::string Settings::getProperty(const std::string& section, const string &key) {
     std::string res;
-    CfgMap::const_iterator it = cfg.begin();
-    it = cfg.find(key);
-    if(it != cfg.end())
+
+    std::map <std::string, std::string> m(cfg[section]);
+    std::map <std::string, std::string>::const_iterator it = m.begin();
+    it = m.find(key);
+    if(it != m.end())
         res = it->second;
 
     return res;

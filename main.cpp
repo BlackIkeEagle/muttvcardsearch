@@ -71,9 +71,10 @@ void printError(const std::string &detail) {
 int main(int argc, char *argv[])
 {
     Settings cfg;
-    Option opt(argc, argv);
+    Option opt(argc, argv, &cfg);
 
     if(opt.doConfig()) {
+        opt.configure();
         return 0;
     } else if ( argc != 2) {
         printError("invalid or missing arguments");
@@ -116,7 +117,7 @@ int main(int argc, char *argv[])
 
     // The worker. will read from your owncloud server as well as from your local cache.
     // In the future, it will most probably also write to your owncloud ;)
-    CardCurler cc(cfg.getProperty("username"), cfg.getProperty("password"), cfg.getProperty("server"), argv[1]);
+    CardCurler cc(cfg.getProperty("default", "username"), cfg.getProperty("default", "password"), cfg.getProperty("default", "server"), argv[1]);
 
     // there is the cache ;)
     std::string cachefile = cfg.getCacheFile();
@@ -132,7 +133,7 @@ int main(int argc, char *argv[])
             }
         }
 
-        std::string url(Url::removePath(cfg.getProperty("server")));
+        std::string url(Url::removePath(cfg.getProperty("default", "server")));
         people = cc.getAllCards(url, query);
 
         if(people.size() > 0 ) {
@@ -184,14 +185,14 @@ int main(int argc, char *argv[])
             }
 
             // now update the cache
-            if(cacheMiss && FileUtils::fileExists(cachefile)) {
-                Cache cache;
-                cache.openDatabase();
-                for(unsigned int i=0; i<people.size(); i++) {
-                    Person p = people.at(i);
-                    cache.addVCard(p.FirstName, p.LastName, p.Emails, p.rawCardData, p.lastUpdatedAt);
-                }
-            }
+//            if(cacheMiss && FileUtils::fileExists(cachefile)) {
+//                Cache cache;
+//                cache.openDatabase();
+//                for(unsigned int i=0; i<people.size(); i++) {
+//                    Person p = people.at(i);
+//                    cache.addVCard(p.FirstName, p.LastName, p.Emails, p.rawCardData, p.lastUpdatedAt);
+//                }
+//            }
 
         } else {
             cout << "Search returned no results" << endl;
