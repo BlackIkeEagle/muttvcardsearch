@@ -240,21 +240,6 @@ void CardCurler::createPerson(const vCard *vcdata, Person *p) {
                 p->lastUpdatedAt = revs.at(0);
             }
         }
-
-        if(false == exportMode) {
-            std::vector<std::string> emails = p->Emails;
-            if(emails.size() > 1) {
-                int counter = 0;
-                for(std::vector<std::string>::const_iterator it = emails.begin(); it != emails.end(); ++it) {
-                    std::string email(*it);
-                    size_t match = email.find(_rawQuery, 0);
-                    if( match != std::string::npos ) {
-                        p->Emails.erase(p->Emails.begin() + counter);
-                    }
-                    counter++;
-                }
-            }
-        }
     }
 }
 

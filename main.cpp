@@ -73,40 +73,7 @@ int main(int argc, char *argv[])
     Settings cfg;
     Option opt(argc, argv);
 
-    if(argc == 4) {
-        std::string tmp;
-
-        tmp = opt.getOption("--server");
-        if(!tmp.length() <= 0) {
-            //opt.trimQuotes(&tmp);
-            cfg.setProperty("server", tmp);
-        } else {
-            printError("property --server=xxx missing");
-            return 1;
-        }
-
-        tmp = opt.getOption("--username");
-        if(!tmp.length() <= 0) {
-            //opt.trimQuotes(&tmp);
-            cfg.setProperty("username", tmp);
-        } else {
-            printError("property --username=xxx missing");
-            return 1;
-        }
-
-        tmp = opt.getOption("--password");
-        if(!tmp.length() <= 0) {
-            //opt.trimQuotes(&tmp);
-            cfg.setProperty("password", tmp);
-        } else {
-            printError("property --password=xxx missing");
-            return 1;
-        }
-
-        // chmod go-a to the config file, ignore the results
-        chmod(cfg.getConfigDir().c_str(), S_IRUSR | S_IWUSR | S_IXUSR);
-        chmod(cfg.getConfigFile().c_str(), S_IRUSR | S_IWUSR);
-
+    if(opt.doConfig()) {
         return 0;
     } else if ( argc != 2) {
         printError("invalid or missing arguments");

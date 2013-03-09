@@ -24,6 +24,7 @@
 #include <string>
 #include <cstring>
 #include <stdlib.h>
+#include "settings.h"
 
 class Option
 {
@@ -31,11 +32,13 @@ public:
     Option(int argc, char **argv);
     std::string getOption(const std::string &option);
     bool hasOption(const std::string &option);
+    bool doConfig();
     static bool isVerbose();
 
 private:
     int _argc;
     char **_argv;
+    Settings cfg;
 };
 
 #endif // OPTION_H

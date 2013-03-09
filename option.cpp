@@ -59,3 +59,41 @@ std::string Option::getOption(const std::string &option) {
     return "";
 }
 
+bool Option::doConfig() {
+    if(_argc == 4) {
+        std::string tmp;
+
+        tmp = this->getOption("--server");
+        if(!tmp.length() <= 0) {
+            cfg.setProperty("server", tmp);
+        } else {
+            std::cerr << "property --server=xxx missing" << std::endl;
+            return false;
+        }
+
+        tmp = this->getOption("--username");
+        if(!tmp.length() <= 0) {
+            cfg.setProperty("username", tmp);
+        } else {
+            std::cerr << "property --username=xxx missing" << std::endl;
+            return false;
+        }
+
+        tmp = this->getOption("--password");
+        if(!tmp.length() <= 0) {
+            cfg.setProperty("password", tmp);
+        } else {
+            std::cerr << "property --password=xxx missing" << std::endl;
+            return false;
+        }
+
+        // chmod go-a to the config file, ignore the results
+        chmod(cfg.getConfigDir().c_str(), S_IRUSR | S_IWUSR | S_IXUSR);
+        chmod(cfg.getConfigFile().c_str(), S_IRUSR | S_IWUSR);
+
+        return true;
+    }
+
+    return false;
+}
+
