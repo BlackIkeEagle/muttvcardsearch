@@ -115,9 +115,8 @@ int main(int argc, char *argv[])
         }
     }
 
-    // The worker. will read from your owncloud server as well as from your local cache.
-    // In the future, it will most probably also write to your owncloud ;)
-    CardCurler cc(cfg.getProperty("default", "username"), cfg.getProperty("default", "password"), cfg.getProperty("default", "server"), argv[1]);
+    // fetch the list of curlers (idea and partially code by Benjamin Frank <bfrank@net.t-labs.tu-berlin.de> on March 9, 2013)
+    std::vector<std::string> sections = cfg.getSections();
 
     // there is the cache ;)
     std::string cachefile = cfg.getCacheFile();
@@ -133,8 +132,12 @@ int main(int argc, char *argv[])
             }
         }
 
-        std::string url(Url::removePath(cfg.getProperty("default", "server")));
-        people = cc.getAllCards(url, query);
+        for(std::vector<std::string>::iterator it = sections.begin(); it != sections.end(); ++it) {
+            CardCurler cc(cfg.getProperty(*it, "username"), cfg.getProperty(*it, "password"), cfg.getProperty(*it, "server"), argv[1]);
+            std::string url(Url::removePath(cfg.getProperty("default", "server")));
+            std::vector<Person> tmp_people = cc.getAllCards(url, query);
+            people.insert(people.end(), tmp_people.begin(), tmp_people.end());
+        }
 
         if(people.size() > 0 ) {
             Cache cache;
@@ -172,7 +175,13 @@ int main(int argc, char *argv[])
         if(people.size() == 0) {
            cacheMiss = true;
            StringUtils::replace(&query, "%s", std::string(argv[1]));
-           people = cc.curlCard(query);
+
+           for(std::vector<std::string>::const_iterator it = sections.begin(); it != sections.end(); ++it) {
+               CardCurler cc(cfg.getProperty(*it, "username"), cfg.getProperty(*it, "password"), cfg.getProperty(*it, "server"), argv[1]);
+               std::vector<Person> tmp_people = cc.curlCard(query);
+               people.insert(people.end(), tmp_people.begin(), tmp_people.end());
+           }
+
         }
 
         if(people.size() > 0) {
@@ -185,14 +194,14 @@ int main(int argc, char *argv[])
             }
 
             // now update the cache
-//            if(cacheMiss && FileUtils::fileExists(cachefile)) {
-//                Cache cache;
-//                cache.openDatabase();
-//                for(unsigned int i=0; i<people.size(); i++) {
-//                    Person p = people.at(i);
-//                    cache.addVCard(p.FirstName, p.LastName, p.Emails, p.rawCardData, p.lastUpdatedAt);
-//                }
-//            }
+            if(cacheMiss && FileUtils::fileExists(cachefile)) {
+                Cache cache;
+                cache.openDatabase();
+                for(unsigned int i=0; i<people.size(); i++) {
+                    Person p = people.at(i);
+                    cache.addVCard(p.FirstName, p.LastName, p.Emails, p.rawCardData, p.lastUpdatedAt);
+                }
+            }
 
         } else {
             cout << "Search returned no results" << endl;

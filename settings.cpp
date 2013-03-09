@@ -96,6 +96,15 @@ bool Settings::isValid() {
     return valid;
 }
 
+std::vector<std::string> Settings::getSections() {
+    std::vector<std::string> result;
+    CfgMap::iterator end = cfg.end();
+    for (CfgMap::const_iterator it = cfg.begin(); it != end; ++it) {
+        result.push_back(it->first);
+    }
+    return result;
+}
+
 void Settings::setSection(const string &section) {
     std::map <std::string, std::string> m;
     cfg[section] = m;

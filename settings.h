@@ -24,6 +24,7 @@
 #include "version.h"
 #include "fileutils.h"
 #include <map>
+#include <vector>
 
 #define CONFIG_DIR ".config/muttvcardsearch"
 #define CONFIG_FILE "muttvcardsearch.conf"
@@ -37,6 +38,7 @@ public:
     void setSection(const std::string& section);
     void setProperty(const std::string& section, std::string key, std::string& value);
     std::string getProperty(const std::string& section, const std::string &key);
+    std::vector<std::string> getSections();
     const std::string getCacheFile();
     const std::string getConfigDir();
     const std::string getConfigFile();
