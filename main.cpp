@@ -184,14 +184,14 @@ int main(int argc, char *argv[])
             }
 
             // now update the cache
-//            if(cacheMiss && FileUtils::fileExists(cachefile)) {
-//                Cache cache;
-//                cache.openDatabase();
-//                for(unsigned int i=0; i<people.size(); i++) {
-//                    Person p = people.at(i);
-//                    cache.addVCard(p.FirstName, p.LastName, p.Emails, p.rawCardData, p.lastUpdatedAt);
-//                }
-//            }
+            if(cacheMiss && FileUtils::fileExists(cachefile)) {
+                Cache cache;
+                cache.openDatabase();
+                for(unsigned int i=0; i<people.size(); i++) {
+                    Person p = people.at(i);
+                    cache.addVCard(p.FirstName, p.LastName, p.Emails, p.rawCardData, p.lastUpdatedAt);
+                }
+            }
 
         } else {
             cout << "Search returned no results" << endl;
