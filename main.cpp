@@ -46,7 +46,8 @@ void printError(const std::string &detail) {
     cout << "See https://github.com/tfl/" << APPNAME << " for updates and source." << endl << endl;
 
     cout << ":::: CONFIGURE ::::" << endl;
-    cout << "$ " << APPNAME << "  --server=OWNCLOUD|SOGo-CARDDAV-URL \\" << endl;
+    cout << "$ " << APPNAME << "  --name=GIVE-IT-A-NAME \\" << endl;
+    cout << "                   --server=OWNCLOUD|SOGo-CARDDAV-URL \\" << endl;
     cout << "                   --username=USERNAME \\" << endl;
     cout << "                   --password=PASSWORD \\" << endl << endl;
 
@@ -168,7 +169,7 @@ int main(int argc, char *argv[])
         // 1. look into the cache
         bool cacheMiss = false;
         if(FileUtils::fileExists(cachefile)) {
-            people = cc.curlCache(std::string(argv[1]));
+            people = CardCurler::curlCache(std::string(argv[1]));
         }
 
         // nothing found in cache? => search online

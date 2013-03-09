@@ -48,12 +48,14 @@ Settings::Settings() {
             } else {
                 if(enterSection == false) continue;
 
-                std::vector<std::string> tokens = StringUtils::split(line, "=");
-                if(tokens.size() == 2) {
-                    std::map< std::string, std::string > _map = cfg[section];
-                    _map.insert(std::pair<std::string, std::string>(tokens.at(0), tokens.at(1)));
-                    cfg[section] = _map;
-                    numSettings++;
+                if(line.size() > 0) {
+                    std::vector<std::string> tokens = StringUtils::split(line, "=");
+                    if(tokens.size() == 2) {
+                        std::map< std::string, std::string > _map = cfg[section];
+                        _map.insert(std::pair<std::string, std::string>(tokens.at(0), tokens.at(1)));
+                        cfg[section] = _map;
+                        numSettings++;
+                    }
                 }
             }
         }
