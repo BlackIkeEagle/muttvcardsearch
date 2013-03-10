@@ -29,9 +29,9 @@ then
 
 1. clone the repository
 2. cd into the new repository
-
-1. for QtCreator execute `qmake; make; sudo make install`
-2. for cmake execute `mkdir build; cd build; cmake -DCMAKE_BUILD_TYPE=Release ..; make; sudo make install`
+3. compile
+    * for QtCreator execute `qmake; make; sudo make install`
+    * for cmake execute `mkdir build; cd build; cmake -DCMAKE_BUILD_TYPE=Release ..; make; sudo make install`
 
 Call muttvcardsearch without arguments to see how to configure it.
 After that set your query command in your .muttrc
