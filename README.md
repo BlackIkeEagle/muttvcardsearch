@@ -37,6 +37,11 @@ then search the local cache first and if your query does not return any data it 
 
 The utility will automatically insert new records not found in the cache but found online.
 
+UPGRADE
+------------
+If you upgrade from version 1.4 or earlier, remove your config file first
+and reconfigure the application.
+
 TODO
 ------------
 * add option *--update-local-cache* to refresh the cache instead to force you to re-create it every time you made a change on your server. This will only work after the migration away from libvcard (this requirement has been met with version 1.4)
