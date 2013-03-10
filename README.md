@@ -4,16 +4,20 @@ muttvcardsearch
 ABOUT
 ------------
 muttvcardsearch is a small mutt carddav search utility for your Owncloud or SOGo server.
-It is written in C++ and depends *only* on [libcurl](http://curl.haxx.se/libcurl/) and [sqlite3](http://www.sqlite.org/). It supports multiple servers.
+It is written in C++ and depends *only* on [libcurl](http://curl.haxx.se/libcurl/)
+and [sqlite3](http://www.sqlite.org/). It supports multiple servers.
 
-The vcard code is entirely based on [libvcard](http://code.google.com/p/libvcard), but does not need QT and also fixes some
-major bugs I found in [libvcard](http://code.google.com/p/libvcard/) (parsing vcards from file,
-parsing attribute values containing a colon...). It is not feature complete, i.e. not
-all functions from *libvcard* are implemented at this time but it works quiet well for me.
-I plan to implement all features from the original *libvcard*-library (currently 1.0.2).
+The vcard code is entirely based on [libvcard](http://code.google.com/p/libvcard), but does not
+need QT and also fixes some major bugs I found in [libvcard](http://code.google.com/p/libvcard/)
+(parsing vcards from file, parsing attribute values containing a colon...). It is not feature
+complete, i.e. not all functions from *libvcard* are implemented at this time but it works quiet
+well for me. I plan to implement all features from the original *libvcard*-library (currently 1.0.2).
 
-I wrote *muttvcardsearch* using QtCreator, so currently you will need Qt to **build** the project
-but not to run it. I plan to support *cmake* too, so stay tuned ;)
+BUILD
+------------
+You can use one of the following tools to build the project
+* QtCreator
+* cmake
 
 INSTALL
 ------------
@@ -25,7 +29,9 @@ then
 
 1. clone the repository
 2. cd into the new repository
-3. execute `qmake; make; sudo make install`
+
+1. for QtCreator execute `qmake; make; sudo make install`
+2. for cmake execute `mkdir build; cd build; cmake -DCMAKE_BUILD_TYPE=Release ..; make; sudo make install`
 
 Call muttvcardsearch without arguments to see how to configure it.
 After that set your query command in your .muttrc
