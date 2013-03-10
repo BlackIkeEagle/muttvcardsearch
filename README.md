@@ -4,7 +4,7 @@ muttvcardsearch
 ABOUT
 ------------
 muttvcardsearch is a small mutt carddav search utility for your Owncloud or SOGo server.
-It is written in C++ and depends *only* on [libcurl](http://curl.haxx.se/libcurl/) and [sqlite3](http://www.sqlite.org/).
+It is written in C++ and depends *only* on [libcurl](http://curl.haxx.se/libcurl/) and [sqlite3](http://www.sqlite.org/). It supports multiple servers.
 
 The vcard code is entirely based on [libvcard](http://code.google.com/p/libvcard), but does not need QT and also fixes some
 major bugs I found in [libvcard](http://code.google.com/p/libvcard/) (parsing vcards from file,
@@ -39,7 +39,6 @@ The utility will automatically insert new records not found in the cache but fou
 
 TODO
 ------------
-* support multiple vcard servers (requested by Benjamin Frank)
 * add option *--update-local-cache* to refresh the cache instead to force you to re-create it every time you made a change on your server. This will only work after the migration away from libvcard (this requirement has been met with version 1.4)
 * add option to save a contact into your vcard store (just like abook)
 * support cmake
