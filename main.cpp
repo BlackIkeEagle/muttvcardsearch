@@ -134,7 +134,8 @@ int main(int argc, char *argv[])
         }
 
         for(std::vector<std::string>::iterator it = sections.begin(); it != sections.end(); ++it) {
-            CardCurler cc(cfg.getProperty(*it, "username"), cfg.getProperty(*it, "password"), cfg.getProperty(*it, "server"), argv[1]);
+            std::string section(*it);
+            CardCurler cc(cfg.getProperty(section, "username"), cfg.getProperty(section, "password"), cfg.getProperty(section, "server"), argv[1]);
             std::string url(Url::removePath(cfg.getProperty("default", "server")));
             std::vector<Person> tmp_people = cc.getAllCards(url, query);
             people.insert(people.end(), tmp_people.begin(), tmp_people.end());
@@ -177,8 +178,10 @@ int main(int argc, char *argv[])
            cacheMiss = true;
            StringUtils::replace(&query, "%s", std::string(argv[1]));
 
+           // isn't it a nice duplication? - so get rid of it, stupid!
            for(std::vector<std::string>::const_iterator it = sections.begin(); it != sections.end(); ++it) {
-               CardCurler cc(cfg.getProperty(*it, "username"), cfg.getProperty(*it, "password"), cfg.getProperty(*it, "server"), argv[1]);
+               std::string section(*it);
+               CardCurler cc(cfg.getProperty(section, "username"), cfg.getProperty(section, "password"), cfg.getProperty(section, "server"), argv[1]);
                std::vector<Person> tmp_people = cc.curlCard(query);
                people.insert(people.end(), tmp_people.begin(), tmp_people.end());
            }
