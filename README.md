@@ -53,20 +53,20 @@ There are 4 options to configure muttvcardsearch
 4. `--password=` - your secret password
 
 
-A valid configuration call for OwnCloud looks like this:
-* `muttvcardsearch --name=Server1 --server=http(s)://<YOUR SERVER.COM>/remote.php/carddav/addressbooks/<USERNAME>/<NAME OF YOUR LIST> --username=my-username --password=secret`
+* A valid configuration call for OwnCloud looks like this:
 
+    - `muttvcardsearch --name=Server1 --server=http(s)://<YOUR SERVER.COM>/remote.php/carddav/addressbooks/<USERNAME>/<NAME OF YOUR LIST> --username=my-username --password=secret`
 
-For a SOGo Server use this:
-* `muttvcardsearch --name=Server1 --server=http(s)://<SERVER-URL>/SOGo/dav/<USERNAME>/Contacts/<LIST>/ --username=user --password=pass`
+* For a SOGo Server use this:
 
+    - `muttvcardsearch --name=Server1 --server=http(s)://<SERVER-URL>/SOGo/dav/<USERNAME>/Contacts/<LIST>/ --username=user --password=pass`
 
 * Include the values in double quotes if you have whitespace in it.
 * The options don't have to be in a particular order
 * To change a setting just reconfigure and pass `--name=your-label` to identify the entry
   and then apply the changes you have. Always provide all settings - even if you only
   would like to change a single setting.
-* To add an entry (i.e. a new vcard list) provide a new label, i.e. `--name=foo`
+* To add an entry (i.e. a new vcard list) provide a new label, i.e. `--name=your-new-label`
 * There is currently no option to show a single entry, show all entries or delete one (or all)
   This can all be done manually using your favorite editor or `less`... see TODO.
 
