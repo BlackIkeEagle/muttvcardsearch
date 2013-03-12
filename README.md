@@ -64,9 +64,17 @@ Note:
 USE
 ------------
 Set your query command in your .muttrc
+
 * `set query_command = "muttvcardsearch '%s'"`
 
-muttvcardsearch will automatically insert new records not found in the cache but found online.
+    * the value in %s will used to search for
+        - firstname
+        - lastname
+        - email address(es)
+      
+      in each vcard
+
+If there is a cache file muttvcardsearch will automatically insert new records not found in the cache but found online.
 
 UPGRADE
 ------------
