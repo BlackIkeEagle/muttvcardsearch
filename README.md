@@ -57,6 +57,8 @@ There is one option which can be used to create a local cache
   A new search should then search the local cache first and if your query does not return any data it will search the server(s).
   The cache will combine all results found in all your servers / carddav resources
 
+Note:
+
 * Include the values in double quotes if you have whitespace in it.
 * The options don't have to be in a particular order
 * To change a setting just reconfigure and pass `--name=your-label` to identify the entry
