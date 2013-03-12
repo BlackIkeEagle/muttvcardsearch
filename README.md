@@ -46,6 +46,7 @@ The utility will automatically insert new records not found in the cache but fou
 CONFIGURE
 ------------
 There are 4 options to configure muttvcardsearch
+
 1. `--name=` - set a label under which this entry will be stored and identified for updates
 2. `--server=` - provide the carddav url here
 3. `--username=` - your username
