@@ -43,6 +43,22 @@ then search the local cache first and if your query does not return any data it 
 
 The utility will automatically insert new records not found in the cache but found online.
 
+CONFIGURE
+------------
+There are 4 options to configure muttvcardsearch
+1. `--name=` - set a label under which this entry will be stored and identified for updates
+2. `--server=` - provide the carddav url here
+3. `--username=` - your username
+4. `--password=` - your secret password
+
+* The options don't have to be in a particular order
+* To change a setting just reconfigure and pass `--name=your-label` to identify the entry
+  and then apply the changes you have. Always provide all settings - even if you only
+  would like to change a single setting.
+* To add an entry (i.e. a new vcard list) provide a new name
+* There is currently no option to show a single entry, show all entries or delete one (or all)
+  This can all be done manually which is a simple text file. Use you favorite editor... see TODO.
+
 UPGRADE
 ------------
 If you upgrade from version 1.4 or earlier, remove your config file first
@@ -52,4 +68,4 @@ TODO
 ------------
 * add option *--update-local-cache* to refresh the cache instead to force you to re-create it every time you made a change on your server. This will only work after the migration away from libvcard (this requirement has been met with version 1.4)
 * add option to save a contact into your vcard store (just like abook)
-
+* add option to show a config entry (or all entries) and delete an entry
