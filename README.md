@@ -63,10 +63,10 @@ Note:
 * The options don't have to be in a particular order
 * To change a setting just reconfigure and pass `--name=your-label` to identify the entry
   and then apply the changes you have. Always provide all settings - even if you only
-  would like to change a single setting.
-* To add an entry (i.e. a new vcard list) provide a new label, i.e. `--name=your-new-label`
-* There is currently no option to show a single entry, show all entries or delete one (or all)
-  This can all be done manually using your favorite editor or `less`... see TODO.
+  would like to change a single one.
+* To add an entry (i.e. a new vcard list) provide a new label, i.e. `--name=your-new-label`, and then pass the rest as shown above.
+* There is currently no option to show a single entry, show all entries or delete one (or all).
+  This can all be done manually using your favorite editor... see TODO.
 
 UPGRADE
 ------------
