@@ -56,9 +56,9 @@ There are 4 options to configure muttvcardsearch
 * To change a setting just reconfigure and pass `--name=your-label` to identify the entry
   and then apply the changes you have. Always provide all settings - even if you only
   would like to change a single setting.
-* To add an entry (i.e. a new vcard list) provide a new name
+* To add an entry (i.e. a new vcard list) provide a new label, i.e. `--name=foo`
 * There is currently no option to show a single entry, show all entries or delete one (or all)
-  This can all be done manually which is a simple text file. Use you favorite editor... see TODO.
+  This can all be done manually using your favorite editor or `less`... see TODO.
 
 UPGRADE
 ------------
