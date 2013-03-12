@@ -5,7 +5,8 @@ ABOUT
 ------------
 muttvcardsearch is a small mutt carddav search utility for your Owncloud or SOGo server.
 It is written in C++ and depends *only* on [libcurl](http://curl.haxx.se/libcurl/)
-and [sqlite3](http://www.sqlite.org/). It supports multiple servers.
+and [sqlite3](http://www.sqlite.org/). It supports multiple servers, i.e. you can have as
+many carddav resources (url's) as you like.
 
 The vcard code is entirely based on [libvcard](http://code.google.com/p/libvcard), but does not
 need QT and also fixes some major bugs I found in [libvcard](http://code.google.com/p/libvcard/)
@@ -33,25 +34,31 @@ then
     * for QtCreator execute `qmake; make; sudo make install`
     * for cmake execute `mkdir build; cd build; cmake -DCMAKE_BUILD_TYPE=Release ..; make; sudo make install`
 
-Call muttvcardsearch without arguments to see how to configure it.
-After that set your query command in your .muttrc
+USAGE
+------------
+Set your query command in your .muttrc
 * `set query_command = "muttvcardsearch '%s'"`
 
-If you like to have your data cached locally use *--create-local-cache* as the first and only option.
-This will download all your contacts into ~/.config/muttvcardsearch/cache.sqlite3. A new search should
-then search the local cache first and if your query does not return any data it will search the server.
-
-The utility will automatically insert new records not found in the cache but found online.
+muttvcardsearch will automatically insert new records not found in the cache but found online.
 
 CONFIGURE
 ------------
-There are 4 options to configure muttvcardsearch
+Call muttvcardsearch without arguments to see how to configure it.
+There are 4 options to add/edit carddav url's
 
 1. `--name=` - set a label under which this entry will be stored and identified for updates
 2. `--server=` - provide the carddav url here
 3. `--username=` - your username
 4. `--password=` - your secret password
 
+` `
+
+1. `--create-local-cache` - this can be used to create a local cache.
+  This will download all your contacts into ~/.config/muttvcardsearch/cache.sqlite3. A new search should
+  then search the local cache first and if your query does not return any data it will search the server(s).
+  The cache will combine all results found in all your servers / carddav resources
+
+` `
 
 * Include the values in double quotes if you have whitespace in it.
 * The options don't have to be in a particular order
