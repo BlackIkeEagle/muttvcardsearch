@@ -53,10 +53,10 @@ There are 4 options to configure muttvcardsearch
 4. `--password=` - your secret password
 
 A valid configuration call for OwnCloud looks like this:
-$ `muttvcardsearch --name=Server1 --server=http(s)://<YOUR SERVER.COM>/remote.php/carddav/addressbooks/<USERNAME>/<NAME OF YOUR LIST> --username=my-username --password=secret`
+* $ `muttvcardsearch --name=Server1 --server=http(s)://<YOUR SERVER.COM>/remote.php/carddav/addressbooks/<USERNAME>/<NAME OF YOUR LIST> --username=my-username --password=secret`
 
 For a SOGo Server use this:
-$ `muttvcardsearch --name=Server1 --server=http(s)://<SERVER-URL>/SOGo/dav/<USERNAME>/Contacts/<LIST>/ --username=user --password=pass`
+* $ `muttvcardsearch --name=Server1 --server=http(s)://<SERVER-URL>/SOGo/dav/<USERNAME>/Contacts/<LIST>/ --username=user --password=pass`
 
 * Include the values in double quotes if you have whitespace in it.
 * The options don't have to be in a particular order
