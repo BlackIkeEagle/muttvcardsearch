@@ -74,6 +74,13 @@ Set your query command in your .muttrc
       
       in each vcard
 
+
+muttvcardsearch will print out `Search returned no results` if
+
+* property *first name* is empty or
+* property *last name* is empty or
+* vcard has no email address(es)
+
 If there is a cache file muttvcardsearch will automatically insert new records not found in the cache but found online.
 
 UPGRADE
