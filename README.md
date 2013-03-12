@@ -34,13 +34,6 @@ then
     * for QtCreator execute `qmake; make; sudo make install`
     * for cmake execute `mkdir build; cd build; cmake -DCMAKE_BUILD_TYPE=Release ..; make; sudo make install`
 
-USAGE
-------------
-Set your query command in your .muttrc
-* `set query_command = "muttvcardsearch '%s'"`
-
-muttvcardsearch will automatically insert new records not found in the cache but found online.
-
 CONFIGURE
 ------------
 Call muttvcardsearch without arguments to see how to configure it.
@@ -67,6 +60,13 @@ Note:
 * To add an entry (i.e. a new vcard list) provide a new label, i.e. `--name=your-new-label`, and then pass the rest as shown above.
 * There is currently no option to show a single entry, show all entries or delete one (or all).
   This can all be done manually using your favorite editor... see TODO.
+
+USE
+------------
+Set your query command in your .muttrc
+* `set query_command = "muttvcardsearch '%s'"`
+
+muttvcardsearch will automatically insert new records not found in the cache but found online.
 
 UPGRADE
 ------------
