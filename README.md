@@ -50,14 +50,14 @@ There are 4 options to add/edit carddav url's
 2. `--server=` - provide the carddav url here
 3. `--username=` - your username
 4. `--password=` - your secret password
-
 ` `
+
 1. `--create-local-cache` - this can be used to create a local cache.
   This will download all your contacts into ~/.config/muttvcardsearch/cache.sqlite3. A new search should
   then search the local cache first and if your query does not return any data it will search the server(s).
   The cache will combine all results found in all your servers / carddav resources
-
 ` `
+
 * Include the values in double quotes if you have whitespace in it.
 * The options don't have to be in a particular order
 * To change a setting just reconfigure and pass `--name=your-label` to identify the entry
