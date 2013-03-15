@@ -104,23 +104,19 @@ std::vector<Person> CardCurler::getAllCards(const std::string &server, const std
 
     if(curl && cardUrls.size() > 0) {
 
-        // init memory chunk
-        struct MemoryStruct chunk;;
-        chunk.size = 0;
-        chunk.memory = (char*)malloc(1);
-
         if(Option::isVerbose()) {
             curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
         }
 
+        std::string card;
         std::string auth(_username + ":" + _password);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
         curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
         curl_easy_setopt(curl, CURLOPT_USERPWD, auth.c_str());
         curl_easy_setopt(curl, CURLOPT_HEADER, 0L);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &CardCurler::WriteMemoryCallback); // directly from libcurl homepage
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &CardCurler::writeFunc);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &card);
 
         //int j = 0;
         for(unsigned int i=0; i < cardUrls.size(); i++) {
@@ -140,28 +136,21 @@ std::vector<Person> CardCurler::getAllCards(const std::string &server, const std
                 break;
             }
 
-            // get the result and reset the chunk
-            if(chunk.memory) {
-                std::string card(chunk.memory);
+            if(card.size() > 0) {
+                Person p;
+                std::vector<vCard> cards = vCard::fromString(card);
 
-                free(chunk.memory);
-                chunk.size = 0;
-                chunk.memory = (char*)malloc(1); // reallocate after free!
-
-                if(card.size() > 0) {
-                    Person p;
-                    std::vector<vCard> cards = vCard::fromString(card);
-
-                    if(cards.size() == 1) {
-                        createPerson(&cards[0], &p);
-                        if(p.isValid()) {
-                            std::cout << "fetched valid vcard from: " << server << url << endl;
-                            p.rawCardData = card;
-                            persons.push_back(p);
-                            //j++;
-                        }
+                if(cards.size() == 1) {
+                    createPerson(&cards[0], &p);
+                    if(p.isValid()) {
+                        std::cout << "fetched valid vcard from: " << server << url << endl;
+                        p.rawCardData = card;
+                        persons.push_back(p);
+                        //j++;
                     }
                 }
+
+                card = "";
             }
 
             //if(j>12) break;
@@ -170,8 +159,6 @@ std::vector<Person> CardCurler::getAllCards(const std::string &server, const std
         /* always cleanup */
         curl_easy_cleanup(curl);
 
-        if(chunk.memory)
-            free(chunk.memory);
     }
 
     curl_global_cleanup();
@@ -273,14 +260,8 @@ bool CardCurler::listContainsQuery(const std::vector<string> *list, const string
 std::string CardCurler::get(const string &requestType, const std::string& query) {
     std::string result;
 
-    // init_card breaks if it failes
-    vcdata *vc = new vcdata();
-    init_vcard(vc);
-
     // prepare the data structure from which curl reads the query which is then send to the peer
     char *data = (char *)(query.c_str());
-
-    // read-data (the query)
     postdata pdata;
     pdata.body_pos = 0;
     pdata.body_size = strlen(data);
@@ -308,10 +289,10 @@ std::string CardCurler::get(const string &requestType, const std::string& query)
 
         curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)pdata.body_size);
         curl_easy_setopt(curl, CURLOPT_READDATA, &pdata);
-        curl_easy_setopt(curl, CURLOPT_READFUNCTION, &CardCurler::readfunc);
+        curl_easy_setopt(curl, CURLOPT_READFUNCTION, &CardCurler::readFunc);
         curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &CardCurler::writefunc);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, vc);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &CardCurler::writeFunc);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
 
         if(Option::isVerbose()) {
             curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
@@ -320,16 +301,14 @@ std::string CardCurler::get(const string &requestType, const std::string& query)
         }
 
         res = curl_easy_perform(curl);
-        if(res == CURLE_OK) {
-            result = vc->ptr;
+        if(res != CURLE_OK) {
+            std::cerr << "CURL Error. Code: " << res << std::endl;
         }
 
         curl_easy_cleanup(curl);
     }
 
-    if(vc->ptr) free(vc->ptr);
     curl_global_cleanup();
-
     return result;
 }
 
@@ -520,73 +499,30 @@ void CardCurler::fixHtml(string* data) {
     StringUtils::replace(data, "&#255;", "ÿ");;
 }
 
-/*
- * The following helpers where copied from the internet.
- * These functions are duplications in itself. SO CLEANUP, STUPID!
- * I don't know any of those copyright owners. Sorry for that.
- */
-
-void CardCurler::init_vcard(vcdata *vc) {
-    vc->len = 0;
-    vc->ptr = (char*)malloc(vc->len+1);
-    if (vc->ptr == NULL) {
-      std::cerr << "CardCurler::init_vcard: malloc() failed!" << std::endl;
-      exit(EXIT_FAILURE);
-    }
-    vc->ptr[0] = '\0';
-}
-
-size_t CardCurler::writefunc(void *ptr, size_t size, size_t nmemb, vcdata *vc) {
-    size_t new_len = vc->len + size * nmemb;
-    vc->ptr = (char*)realloc(vc->ptr, new_len+1);
-
-    if (vc->ptr == NULL) {
-        std::cerr << "CardCurler::writefunc: realloc() failed!" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    memcpy(vc->ptr + vc->len, ptr, size*nmemb);
-    vc->ptr[new_len] = '\0';
-    vc->len = new_len;
-
+// a really nice way to implement a write-data-function
+// taken from https://github.com/akrennmair/newsbeuter/blob/master/src/google_api.cpp
+size_t CardCurler::writeFunc(void *buffer, size_t size, size_t nmemb, void *userp) {
+    std::string * pbuf = static_cast<std::string *>(userp);
+    pbuf->append(static_cast<const char *>(buffer), size * nmemb);
     return size * nmemb;
 }
 
-size_t CardCurler::readfunc(void *ptr, size_t size, size_t nmemb, void *stream)
+size_t CardCurler::readFunc(void *buffer, size_t size, size_t nmemb, void *userp)
 {
-    if (stream)
+    if (userp)
     {
-        postdata *ud = (postdata*) stream;
+        postdata *ud = (postdata*) userp;
         int curlSize = size * nmemb;
         int available = (ud->body_size - ud->body_pos);
 
         if (available > 0)
         {
             int written = std::min( curlSize, available );
-            memcpy(ptr, ((char*)(ud->data)) + ud->body_pos, written);
+            memcpy(buffer, ((char*)(ud->data)) + ud->body_pos, written);
             ud->body_pos += written;
             return written;
         }
     }
 
     return 0;
-}
-
-size_t CardCurler::WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
-{
-  size_t realsize = size * nmemb;
-  struct MemoryStruct *mem = (struct MemoryStruct *)userp;
-
-  mem->memory = (char*)realloc(mem->memory, mem->size + realsize + 1);
-  if (mem->memory == NULL) {
-    /* out of memory! */
-    std::cerr << "CardCurler::WriteMemoryCallback: realloc() failed!" << std::endl;
-    exit(EXIT_FAILURE);
-  }
-
-  memcpy(&(mem->memory[mem->size]), contents, realsize);
-  mem->size += realsize;
-  mem->memory[mem->size] = 0;
-
-  return realsize;
 }

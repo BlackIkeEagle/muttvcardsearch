@@ -48,18 +48,6 @@ public:
 
 private:
 
-    // write-data, result
-    struct vcdata {
-      char *ptr;
-      size_t len;
-    };
-
-    // a nice duplication
-    struct MemoryStruct {
-      char *memory;
-      size_t size;
-    };
-
     // read-data, query
     typedef struct
     {
@@ -86,12 +74,10 @@ private:
     std::string get(const std::string& requestType, const std::string &query = std::string());
     std::vector< std::string > getvCardURLs(const std::string &query);
     void fixHtml(string *data);
-    void init_vcard(struct vcdata *vc);
     void createPerson(const vCard *vcdata, Person *p);
     bool listContainsQuery(const std::vector<std::string> *list, const std::string &query);
-    static size_t writefunc(void *ptr, size_t size, size_t nmemb, struct vcdata *vc);
-    static size_t readfunc(void *ptr, size_t size, size_t nmemb, void *stream);
-    static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp);
+    static size_t writeFunc(void *buffer, size_t size, size_t nmemb, void *userp);
+    static size_t readFunc(void *buffer, size_t size, size_t nmemb, void *userp);
 };
 
 #endif // CARDCURLER_H
