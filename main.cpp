@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
 
             std::string server(cfg.getProperty(section, "server"));
             std::string url(Url::removePath(server));
-            std::cout << "Creating cache entries for config section [" << section << "], URL: [" << server << "] (parsed URI is: " << url << ")" << std::endl;
+            std::cout << "Creating cache entries for config section [" << section << "], URL: [" << server << "]" << std::endl;
 
             if(url.size() > 0) {
                 CardCurler cc(cfg.getProperty(section, "username"), cfg.getProperty(section, "password"), server, argv[1]);
