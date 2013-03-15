@@ -135,11 +135,15 @@ int main(int argc, char *argv[])
 
         for(std::vector<std::string>::iterator it = sections.begin(); it != sections.end(); ++it) {
             std::string section(*it);
+
             std::string server(cfg.getProperty(section, "server"));
-            CardCurler cc(cfg.getProperty(section, "username"), cfg.getProperty(section, "password"), server, argv[1]);
             std::string url(Url::removePath(server));
-            std::vector<Person> tmp_people = cc.getAllCards(url, query);
-            people.insert(people.end(), tmp_people.begin(), tmp_people.end());
+
+            if(url.size() > 0) {
+                CardCurler cc(cfg.getProperty(section, "username"), cfg.getProperty(section, "password"), server, argv[1]);
+                std::vector<Person> tmp_people = cc.getAllCards(url, query);
+                people.insert(people.end(), tmp_people.begin(), tmp_people.end());
+            }
         }
 
         if(people.size() > 0 ) {
@@ -181,12 +185,15 @@ int main(int argc, char *argv[])
 
            // isn't it a nice duplication? - so get rid of it, stupid!
            for(std::vector<std::string>::const_iterator it = sections.begin(); it != sections.end(); ++it) {
-               std::string section(*it);
-               CardCurler cc(cfg.getProperty(section, "username"), cfg.getProperty(section, "password"), cfg.getProperty(section, "server"), argv[1]);
-               std::vector<Person> tmp_people = cc.curlCard(query);
-               people.insert(people.end(), tmp_people.begin(), tmp_people.end());
-           }
+                std::string section(*it);
+                std::string server(cfg.getProperty(section, "server"));
 
+              if(server.size() > 0) {
+                   CardCurler cc(cfg.getProperty(section, "username"), cfg.getProperty(section, "password"), server, argv[1]);
+                   std::vector<Person> tmp_people = cc.curlCard(query);
+                   people.insert(people.end(), tmp_people.begin(), tmp_people.end());
+              }
+           }
         }
 
         if(people.size() > 0) {

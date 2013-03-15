@@ -25,12 +25,24 @@ Url::Url()
 }
 
 std::string Url::removePath(const std::string &url) {
-    int pos = url.find("//");
-    std::string scheme = url.substr(0, pos-1);
+    if(url.size() < 10) {
+        std::cerr << "Invalid URL: '" << url << "'' An url of length '" << url.size() << "' can't really be valid." << std::endl;
+        return "";
+    }
 
+    size_t pos = url.find("//");
+    if(pos == std::string::npos) {
+        std::cerr << "Invalid URL: '" << url << "'' It has no '//' to distinguish between scheme and host part" << std::endl;
+        return "";
+    }
+
+    std::string scheme   = url.substr(0, pos-1);
     std::string hostpart = url.substr(pos+2);
+
     pos = hostpart.find("/");
-    hostpart = hostpart.substr(0, pos);
+    if(pos != std::string::npos) {
+        hostpart = hostpart.substr(0, pos);
+    }
 
     std::string result = scheme.append("://").append(hostpart);
     return result;
