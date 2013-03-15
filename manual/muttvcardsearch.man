@@ -1,0 +1,48 @@
+.\" Manpage for muttvcardsearch.
+.\" Contact github@netfg.net.in to correct errors or typos.
+
+.TH man 8 "13 Mar 2013" "1.0" "muttvcardsearch man page"
+
+.SH NAME
+muttvcardsearch \- A small mutt carddav search utility
+
+.SH SYNOPSIS
+muttvcardsearch [SEARCH-TERM]
+
+.SH DESCRIPTION
+.B muttvcardsearch
+is a small mutt carddav search utility for your Owncloud or SOGo server written in C++.
+It may be used to query any vcard ressource implementing the CardDAV standard.
+
+.SH OPTIONS
+
+.IP --create-local-cache
+This option downloads all vcards from all configured vcard ressources and stores them all together in a single sqlite3 database.
+
+.IP --name=...
+Specifies a lable for a set of options. This lable will later be used to identify a particular block of settings to show and/or update the values.
+
+.IP --server=...
+The URL for a vcard ressource
+
+.IP --username=...
+The username used to authenticate against a ressource
+
+.IP --password=...
+The users password for the ressource
+
+.SH SEE ALSO
+mutt
+
+.SH ENVIRONMENT
+.IP SEARCH_VERBOSE
+If the value equals 1 muttvcardsearch will instruct libCurl to query your ressources in CURLOPT_VERBOSE mode. This will result in
+much more query information written to STDOUT. Should not be used in production.
+
+.SH Files
+~/.config/muttvcardsearch
+~/.config/muttvcardsearch/muttvcardsearch.conf
+~/.config/muttvcardsearch/cache.sqlite3
+
+.SH AUTHOR
+Torsten Flammiger (github@netfg.net)

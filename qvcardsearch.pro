@@ -67,3 +67,6 @@ HEADERS += \
 
 RESOURCES +=
 
+OTHER_FILES += \
+    manual/muttvcardsearch.man
+
