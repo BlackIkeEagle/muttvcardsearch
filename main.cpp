@@ -136,9 +136,9 @@ int main(int argc, char *argv[])
         for(std::vector<std::string>::iterator it = sections.begin(); it != sections.end(); ++it) {
             std::string section(*it);
 
-            std::cout << "Creating cache entries for config section [" << section << "]" << std::endl;
             std::string server(cfg.getProperty(section, "server"));
             std::string url(Url::removePath(server));
+            std::cout << "Creating cache entries for config section [" << section << "], URL: [" << url << "]" << std::endl;
 
             if(url.size() > 0) {
                 CardCurler cc(cfg.getProperty(section, "username"), cfg.getProperty(section, "password"), server, argv[1]);
