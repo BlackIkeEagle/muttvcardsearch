@@ -501,12 +501,20 @@ void CardCurler::fixHtml(string* data) {
 
 // a really nice way to implement a write-data-function
 // taken from https://github.com/akrennmair/newsbeuter/blob/master/src/google_api.cpp
+// (and now I understand what is happening under the hood here...)
 size_t CardCurler::writeFunc(void *buffer, size_t size, size_t nmemb, void *userp) {
+    // we know, that *userp points to a std::string because that is what we
+    // applied to CURLOPT_WRITEDATA. Therefore we can cast the void pointer into a
+    // pointer to std::string and simply use STL method append() to append the data
+    // that we receive in *buffer
     std::string * pbuf = static_cast<std::string *>(userp);
     pbuf->append(static_cast<const char *>(buffer), size * nmemb);
     return size * nmemb;
 }
 
+// making the same as in our writeFunc is not possible here. AFAIK.
+// I don't know a method making a pointer to std::string from const char*
+// without copying it - and thus we would work on a copy of *buffer instead on *buffer directly
 size_t CardCurler::readFunc(void *buffer, size_t size, size_t nmemb, void *userp)
 {
     if (userp)
