@@ -135,8 +135,9 @@ int main(int argc, char *argv[])
 
         for(std::vector<std::string>::iterator it = sections.begin(); it != sections.end(); ++it) {
             std::string section(*it);
-            CardCurler cc(cfg.getProperty(section, "username"), cfg.getProperty(section, "password"), cfg.getProperty(section, "server"), argv[1]);
-            std::string url(Url::removePath(cfg.getProperty("default", "server")));
+            std::string server(cfg.getProperty(section, "server"));
+            CardCurler cc(cfg.getProperty(section, "username"), cfg.getProperty(section, "password"), server, argv[1]);
+            std::string url(Url::removePath(server));
             std::vector<Person> tmp_people = cc.getAllCards(url, query);
             people.insert(people.end(), tmp_people.begin(), tmp_people.end());
         }
