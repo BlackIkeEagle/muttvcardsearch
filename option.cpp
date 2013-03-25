@@ -61,7 +61,7 @@ std::string Option::getOption(const std::string &option) {
 }
 
 bool Option::doConfig() {
-    std::string tmp = this->getOption("--name");
+    std::string tmp = this->getOption("--label");
     if(tmp.length() == 0) return false;
 
     tmp = this->getOption("--server");
@@ -78,7 +78,7 @@ bool Option::doConfig() {
 
 void Option::configure() {
     // for the name option set the section!
-    std::string section = this->getOption("--name");
+    std::string section = this->getOption("--label");
     _cfg.setSection(section);
 
     // for the rest call setProperty

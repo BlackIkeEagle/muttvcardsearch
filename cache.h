@@ -45,7 +45,7 @@ public:
     bool openDatabase();
     bool createDatabase();
     std::vector<Person> findInCache(const std::string &query);
-    void addVCard(const std::string& fn, const std::string& ln, const std::vector< std::string > &emails, const std::string& data, const std::string& updatedAt);
+    void addVCard(const std::string& fn, const std::string& ln, const std::vector< std::string > &emails, const std::string& data, const std::string& label, const std::string& updatedAt);
 
 private:
     Settings cfg;

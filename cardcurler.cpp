@@ -89,7 +89,7 @@ std::vector<std::string> CardCurler::getvCardURLs(const std::string &query) {
  *
  * @return: returns a Qlist of Person objects
  */
-std::vector<Person> CardCurler::getAllCards(const std::string &server, const std::string &query) {
+std::vector<Person> CardCurler::getAllCards(const string &label, const std::string &server, const std::string &query) {
     std::vector<Person> persons;
 
     exportMode = true;
@@ -145,6 +145,7 @@ std::vector<Person> CardCurler::getAllCards(const std::string &server, const std
                     if(p.isValid()) {
                         std::cout << "fetched valid vcard from: " << server << url << endl;
                         p.rawCardData = card;
+                        p.label = label;
                         persons.push_back(p);
                         //j++;
                     }

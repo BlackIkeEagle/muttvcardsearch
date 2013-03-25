@@ -46,7 +46,7 @@ void printError(const std::string &detail) {
     cout << "See https://github.com/tfl/" << APPNAME << " for updates and source." << endl << endl;
 
     cout << ":::: CONFIGURE ::::" << endl;
-    cout << "$ " << APPNAME << "  --name=GIVE-IT-A-NAME \\" << endl;
+    cout << "$ " << APPNAME << "  --label=GIVE-IT-A-NAME \\" << endl;
     cout << "                   --server=OWNCLOUD|SOGo-CARDDAV-URL \\" << endl;
     cout << "                   --username=USERNAME \\" << endl;
     cout << "                   --password=PASSWORD \\" << endl << endl;
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
 
             if(url.size() > 0) {
                 CardCurler cc(cfg.getProperty(section, "username"), cfg.getProperty(section, "password"), server, argv[1]);
-                std::vector<Person> tmp_people = cc.getAllCards(url, query);
+                std::vector<Person> tmp_people = cc.getAllCards(section, url, query);
                 people.insert(people.end(), tmp_people.begin(), tmp_people.end());
             }
         }
@@ -162,6 +162,7 @@ int main(int argc, char *argv[])
                             p.LastName,
                             p.Emails,
                             p.rawCardData,
+                            p.label,
                             p.lastUpdatedAt
                 );
                 numRecords++;

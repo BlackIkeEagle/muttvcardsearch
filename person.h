@@ -33,6 +33,7 @@ public:
     std::string lastUpdatedAt;
     std::vector< std::string > Emails;
     std::string rawCardData;
+    std::string label;
 
     bool isValid();
 };

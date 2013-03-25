@@ -239,7 +239,7 @@ bool Cache::createDatabase() {
     }
 
     // create the main table
-    bool b = prepSqlite("CREATE TABLE vcards(VCardID INTEGER PRIMARY KEY, FirstName STRING, LastName STRING, VCard TEXT, UpdatedAt STRING)");
+    bool b = prepSqlite("CREATE TABLE vcards(VCardID INTEGER PRIMARY KEY, FirstName STRING, LastName STRING, VCard TEXT, Label STRING, UpdatedAt STRING)");
     if(false == b) return b;
     b = stepSqlite("Can't step to create table 'vcards' in cache database");
     if(false == b) return b;
@@ -282,6 +282,14 @@ bool Cache::createDatabase() {
     b = prepSqlite("CREATE INDEX lastname_idx ON vcards (lastname)");
     if(false == b) return b;
     b = stepSqlite("Can't step on index for table 'vcards', column 'lastname'");
+    if(false == b) return b;
+    b = finalizeSqlite();
+    if(false == b) return b;
+
+    // index on the label (i.e. the name of the resource)
+    b = prepSqlite("CREATE INDEX label_idx ON vcards (label)");
+    if(false == b) return b;
+    b = stepSqlite("Can't step on index for table 'vcards', column 'label'");
     if(false == b) return b;
     b = finalizeSqlite();
     if(false == b) return b;
