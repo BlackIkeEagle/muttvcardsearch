@@ -171,7 +171,7 @@ void Cache::addEmails(const std::vector<std::string> &emails, int rowID) {
     }
 }
 
-void Cache::addVCard(const std::string &fn, const std::string &ln, const std::vector< std::string > &emails, const std::string &data, const std::string &updatedAt) {
+void Cache::addVCard(const std::string &fn, const std::string &ln, const std::vector< std::string > &emails, const std::string &data, const std::string& label, const std::string &updatedAt) {
     if(fn.length() == 0) {
         std::cerr << "Firstname is empty!" << std::endl;
         return;
@@ -192,6 +192,11 @@ void Cache::addVCard(const std::string &fn, const std::string &ln, const std::ve
         return;
     }
 
+    if(label.length() == 0 ) {
+        std::cerr << "Label is empty!" << std::endl;
+        return;
+    }
+
     if(db == NULL) {
         std::cerr << "Database not open!" << std::endl;
         return;
@@ -201,8 +206,8 @@ void Cache::addVCard(const std::string &fn, const std::string &ln, const std::ve
     std::stringstream ss;
 
     // happy sql injecting ;)
-    ss << "insert into vcards (FirstName, LastName, VCard, UpdatedAt) values (";
-    ss << "'" << fn << "','" << ln << "','" << data << "','" << dt << "')";
+    ss << "insert into vcards (FirstName, LastName, VCard, Label, UpdatedAt) values (";
+    ss << "'" << fn << "','" << ln << "','" << data << "','" << label << "','" << dt << "')";
 
     bool b = prepSqlite(ss.str());
     if(b) {
