@@ -328,7 +328,7 @@ std::vector<Person> CardCurler::curlCache(const std::string &query) {
 }
 
 // curl a card online
-std::vector<Person> CardCurler::curlCard(const std::string &query) {
+std::vector<Person> CardCurler::curlCard(const std::string &query, const std::string& label) {
 
     // Result
     std::vector<Person> people;
@@ -374,6 +374,7 @@ std::vector<Person> CardCurler::curlCard(const std::string &query) {
 
                         if(p.isValid()) {
                             p.rawCardData = s;
+                            p.label = label;
                             people.push_back(p);
                         }
                     }

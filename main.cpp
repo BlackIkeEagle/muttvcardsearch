@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
 
               if(server.size() > 0) {
                    CardCurler cc(cfg.getProperty(section, "username"), cfg.getProperty(section, "password"), server, argv[1]);
-                   std::vector<Person> tmp_people = cc.curlCard(query);
+                   std::vector<Person> tmp_people = cc.curlCard(query, section);
                    people.insert(people.end(), tmp_people.begin(), tmp_people.end());
               }
            }
@@ -213,7 +213,7 @@ int main(int argc, char *argv[])
                 cache.openDatabase();
                 for(unsigned int i=0; i<people.size(); i++) {
                     Person p = people.at(i);
-                    cache.addVCard(p.FirstName, p.LastName, p.Emails, p.rawCardData, p.lastUpdatedAt);
+                    cache.addVCard(p.FirstName, p.LastName, p.Emails, p.rawCardData, p.label, p.lastUpdatedAt);
                 }
             }
 

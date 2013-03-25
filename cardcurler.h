@@ -42,7 +42,7 @@ class CardCurler
 {
 public:
     CardCurler(const std::string &username, const std::string &password, const std::string &url, const std::string &rawQuery);
-    std::vector<Person> curlCard(const std::string &query);
+    std::vector<Person> curlCard(const std::string &query, const string &label);
     static std::vector<Person> curlCache(const std::string &query); // query should be the raw query string as we dont query the server
     std::vector<Person> getAllCards(const std::string &label ,const std::string &server, const std::string &query);
 
