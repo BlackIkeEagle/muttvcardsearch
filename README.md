@@ -11,13 +11,13 @@ many carddav resources (url's) as you like.
 The vcard code is entirely based on [libvcard](http://code.google.com/p/libvcard), but does not
 need QT and also fixes some major bugs I found in [libvcard](http://code.google.com/p/libvcard/)
 (parsing vcards from file, parsing attribute values containing a colon...). It is not feature
-complete, i.e. not all functions from *libvcard* are implemented at this time but it works quiet
-well for me. I plan to implement all features from the original *libvcard*-library (currently 1.0.2).
+complete, i.e. not all functions from *libvcard* are implemented at this time but it worked quiet
+well for me.
 
 BUILD
 ------------
 You can use one of the following tools to build the project
-* QtCreator
+* qmake
 * cmake
 
 INSTALL
@@ -31,7 +31,7 @@ then
 1. clone the repository
 2. cd into the new repository
 3. compile
-    * for QtCreator execute `qmake; make; sudo make install`
+    * for qmake execute `qmake; make; sudo make install`
     * for cmake execute `mkdir build; cd build; cmake -DCMAKE_BUILD_TYPE=Release ..; make; sudo make install`
 
 CONFIGURE
@@ -54,6 +54,7 @@ Note:
 
 * Include the values in double quotes if you have whitespace in it.
 * The options don't have to be in a particular order
+* You need to have a username and password - anonymous connections are not supported
 * To change a setting just reconfigure and pass `--name=your-label` to identify the entry
   and then apply the changes you have. Always provide all settings - even if you only
   would like to change a single one.
@@ -90,6 +91,4 @@ and reconfigure the application.
 
 TODO
 ------------
-* add option *--update-local-cache* to refresh the cache instead to force you to re-create it every time you made a change on your server. This will only work after the migration away from libvcard (this requirement has been met with version 1.4)
-* add option to save a contact into your vcard store (just like abook)
-* add option to show a config entry (or all entries) and delete an entry
+* nothing
