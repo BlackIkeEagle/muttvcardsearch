@@ -28,9 +28,9 @@ Cache::Cache()
 
 Cache::~Cache() {
     if (db) {
-        int retVal = sqlite3_close_v2(db);
+        int retVal = sqlite3_close(db);
         if( SQLITE_OK != retVal ) {
-            std::cerr << "Oops: failed to properly close database: " << sqlite3_errstr(retVal) << std::endl;
+            std::cerr << "Oops: failed to properly close database: " << sqlite3_errmsg(db) << std::endl;
         }
     }
 }
@@ -38,7 +38,7 @@ Cache::~Cache() {
 bool Cache::finalizeSqlite() {
     int retVal = sqlite3_finalize(stmt);
     if(SQLITE_OK != retVal) {
-        std::cerr << "Unable to finalize: " << sqlite3_errstr(retVal) << std::endl;
+        std::cerr << "Unable to finalize: " << sqlite3_errmsg(db) << std::endl;
         return false;
     }
 
@@ -48,7 +48,7 @@ bool Cache::finalizeSqlite() {
 bool Cache::stepSqlite(const std::string &errMsg) {
     int retVal = sqlite3_step(stmt);
     if(SQLITE_DONE != retVal) {
-        std::cerr << errMsg << ": " << sqlite3_errstr(retVal) << std::endl;
+        std::cerr << errMsg << ": " << sqlite3_errmsg(db) << std::endl;
         return false;
     }
 
@@ -58,7 +58,7 @@ bool Cache::stepSqlite(const std::string &errMsg) {
 bool Cache::prepSqlite(const std::string &query) {
     int retVal = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, NULL);
     if(SQLITE_OK != retVal) {
-        std::cerr << "Failed to prepare statement: " << query << " - Message:" << sqlite3_errstr(retVal) << std::endl;
+        std::cerr << "Failed to prepare statement: " << query << " - Message:" << sqlite3_errmsg(db) << std::endl;
         return false;
     }
 
@@ -132,7 +132,7 @@ std::string Cache::buildDateTimeString(const std::string &dtString) {
 bool Cache::initSqlite() {
     int retVal = sqlite3_initialize();
     if(SQLITE_OK != retVal) {
-        std::cerr << "Can't initialize sqlite3: " << sqlite3_errstr(retVal) << std::endl;
+        std::cerr << "Can't initialize sqlite3: " << sqlite3_errmsg(db) << std::endl;
         return false;
     }
 
@@ -149,7 +149,7 @@ bool Cache::openDatabase() {
 
     int retVal = sqlite3_open_v2(cache_file.c_str(), &db, SQLITE_OPEN_READWRITE, NULL);
     if(SQLITE_OK != retVal) {
-        std::cerr << "Can't open/create database (RW) in " << cache_file << ": " << sqlite3_errstr(retVal) << std::endl;
+        std::cerr << "Can't open/create database (RW) in " << cache_file << ": " << sqlite3_errmsg(db) << std::endl;
         return false;
     }
 
@@ -234,7 +234,7 @@ bool Cache::createDatabase() {
 
     int retVal = sqlite3_open_v2(cache_file.c_str(), &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
     if(SQLITE_OK != retVal) {
-        std::cerr << "Can't open/create database in " << cache_file << ": " << sqlite3_errstr(retVal) << std::endl;
+        std::cerr << "Can't open/create database in " << cache_file << ": " << sqlite3_errmsg(db) << std::endl;
         return false;
     }
 

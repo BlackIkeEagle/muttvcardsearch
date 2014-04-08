@@ -59,13 +59,23 @@ std::vector<std::string> CardCurler::getvCardURLs(const std::string &query) {
     std::vector<std::string> result;
     std::vector<std::string> tokens = StringUtils::split(s, href_begin);
 
+    if(tokens.size() == 0) {
+        // check if we found something
+        // If not, maybe it's an RADICALE server and those answer different
+        // i.e. there is no xml namespace D:href or d:href instead a simple href ;)
+        href_begin = "<href>";
+        href_end = "</href>";
+        tokens = StringUtils::split(s, href_begin);
+    }
+
     if(tokens.size() >= 1) {
         for(unsigned int i=1; i<tokens.size(); i++) {
             std::vector<std::string> inner = StringUtils::split(tokens.at(i), href_end);;
             if(inner.size() >= 1) {
                 std::string url = inner.at(0);
 
-                if(StringUtils::endsWith(url, "vcf")) {
+                // RADICALE has URL's ending with vcf/
+                if(StringUtils::endsWith(url, "vcf") || StringUtils::endsWith(url, "vcf/")) {
                     result.push_back(url);
                 }
             }
@@ -134,6 +144,10 @@ std::vector<Person> CardCurler::getAllCards(const std::string &server, const std
                      << curl_easy_strerror(res) << endl;
 
                 break;
+            }
+
+            if(Option::isVerbose()) {
+                std::cerr << "TRACE: " << "found num vcards: " << card.size() << std::endl;
             }
 
             if(card.size() > 0) {
@@ -335,6 +349,10 @@ std::vector<Person> CardCurler::curlCard(const std::string &query) {
     // execute the query!
     std::string http_result = get("REPORT", query);
 
+    if(Option::isVerbose()) {
+        cout << "TRACE: " << "querying via func curlCard. Query is:" << query << endl;
+    }
+
     std::string vcardAddressBeginToken = "<card:address-data>"; // defaults to Owncloud
     std::string vcardAddressEndToken = "</card:address-data>";
 
@@ -342,6 +360,11 @@ std::vector<Person> CardCurler::curlCard(const std::string &query) {
         vcardAddressBeginToken = "<C:address-data>";
         vcardAddressEndToken   = "</C:address-data>";
         isSOGO = true;
+    }
+
+    if(http_result.find("<CR:address-data>") != std::string::npos) { // RADICALE
+        vcardAddressBeginToken = "<CR:address-data>";
+        vcardAddressEndToken   = "</CR:address-data>";
     }
 
     std::vector<std::string> list = StringUtils::split(http_result, vcardAddressBeginToken);
