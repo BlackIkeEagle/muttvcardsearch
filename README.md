@@ -4,6 +4,8 @@ muttvcardsearch
 ABOUT
 ------------
 muttvcardsearch is a small mutt carddav search utility for your Owncloud or SOGo server.
+As of version 1.6 limitted support for Radicale was added. See note below.
+
 It is written in C++ and depends *only* on [libcurl](http://curl.haxx.se/libcurl/)
 and [sqlite3](http://www.sqlite.org/). It supports multiple servers, i.e. you can have as
 many carddav resources (url's) as you like.
@@ -11,8 +13,7 @@ many carddav resources (url's) as you like.
 The vcard code is entirely based on [libvcard](http://code.google.com/p/libvcard), but does not
 need QT and also fixes some major bugs I found in [libvcard](http://code.google.com/p/libvcard/)
 (parsing vcards from file, parsing attribute values containing a colon...). It is not feature
-complete, i.e. not all functions from *libvcard* are implemented at this time but it worked quiet
-well for me.
+complete, i.e. not all functions from *libvcard* are implemented at this time but it worked quiet well for me.
 
 BUILD
 ------------
@@ -52,6 +53,7 @@ There is one option which can be used to create a local cache
 
 Note:
 
+* As of writing this using the local cache is the only option for Radicale users
 * Include the values in double quotes if you have whitespace in it.
 * The options don't have to be in a particular order
 * You need to have a username and password - anonymous connections are not supported
@@ -91,4 +93,4 @@ and reconfigure the application.
 
 TODO
 ------------
-* nothing
+* Bugfixes

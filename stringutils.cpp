@@ -91,10 +91,10 @@ bool StringUtils::contains(const string &text, const string& pattern) {
     if( pattern.length() > text.length() )
         return false;
 
-    unsigned long pos = text.find(pattern, 0);
+    if( text.find(pattern, 0) == std::string::npos )
+        return false;
 
-    if(pos > 0) return true;
-    return false;
+    return true;
 }
 
 void StringUtils::replace(string *text, const string &from, const string &to) {

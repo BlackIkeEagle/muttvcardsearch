@@ -208,10 +208,9 @@ void Cache::addVCard(const std::string &fn, const std::string &ln, const std::ve
     if(b) {
         b = stepSqlite("Failed to add new record to cache database");
         if(b) {
+            finalizeSqlite();
             sqlite3_int64 rowid = sqlite3_last_insert_rowid(db);
             addEmails(emails, rowid);
-        } else {
-            finalizeSqlite(); // finalize on error only
         }
     }
 }

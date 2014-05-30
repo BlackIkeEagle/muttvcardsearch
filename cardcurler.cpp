@@ -47,25 +47,37 @@ CardCurler::CardCurler(const std::string &username, const std::string &password,
 std::vector<std::string> CardCurler::getvCardURLs(const std::string &query) {
     std::string s = get("PROPFIND", query);
 
+    if(Option::isVerbose()) {
+        std::cout << "CardCurler::getvCardURLs got PROPFIND result: " << s << std::endl;
+    }
+
     // check xml case D:href (SOGo) or d:href (owncloud)
     std::string href_begin = "<d:href>";
     std::string href_end = "</d:href>";
-    if( s.find("D:href", 0) != std::string::npos ) {
+    if( StringUtils::contains(s, "D:href") ) {
         href_begin = "<D:href>";
         href_end   = "</D:href>";
         isSOGO = true;
+
+        if(Option::isVerbose()) {
+            std::cout << "Found SoGO namespace" << std::endl;
+        }
+
+    } else if( StringUtils::contains(s, "<href>") ) {
+        // radicale returns no namespaces here
+        href_begin = "<href>";
+        href_end   = "</href>";
+
+        if(Option::isVerbose()) {
+            std::cout << "Assume Radicale response as there are no namespaces" << std::endl;
+        }
     }
 
     std::vector<std::string> result;
     std::vector<std::string> tokens = StringUtils::split(s, href_begin);
 
-    if(tokens.size() == 0) {
-        // check if we found something
-        // If not, maybe it's an RADICALE server and those answer different
-        // i.e. there is no xml namespace D:href or d:href instead a simple href ;)
-        href_begin = "<href>";
-        href_end = "</href>";
-        tokens = StringUtils::split(s, href_begin);
+    if(Option::isVerbose()) {
+        std::cout << "Found " << tokens.size() << " tokens" << std::endl;
     }
 
     if(tokens.size() >= 1) {
@@ -73,6 +85,10 @@ std::vector<std::string> CardCurler::getvCardURLs(const std::string &query) {
             std::vector<std::string> inner = StringUtils::split(tokens.at(i), href_end);;
             if(inner.size() >= 1) {
                 std::string url = inner.at(0);
+
+                if(Option::isVerbose()) {
+                    std::cout << "CardCurler::getvCardURLs: parsed url: " << url << std::endl;
+                }
 
                 // RADICALE has URL's ending with vcf/
                 if(StringUtils::endsWith(url, "vcf") || StringUtils::endsWith(url, "vcf/")) {
@@ -100,6 +116,12 @@ std::vector<std::string> CardCurler::getvCardURLs(const std::string &query) {
  * @return: returns a Qlist of Person objects
  */
 std::vector<Person> CardCurler::getAllCards(const std::string &server, const std::string &query) {
+
+    if(Option::isVerbose()) {
+        std::cout << "CardCurler::getAllCards called. Server: " << server << std::endl;
+        std::cout << "CardCurler::getAllCards called. Query: " << query << std::endl;
+    }
+
     std::vector<Person> persons;
 
     exportMode = true;
@@ -111,6 +133,10 @@ std::vector<Person> CardCurler::getAllCards(const std::string &server, const std
     curl = curl_easy_init();
 
     std::vector< std::string > cardUrls = getvCardURLs(query);
+
+    if(Option::isVerbose()) {
+        std::cout << "Number of card urls: " << cardUrls.size() << std::endl;
+    }
 
     if(curl && cardUrls.size() > 0) {
 
@@ -134,6 +160,10 @@ std::vector<Person> CardCurler::getAllCards(const std::string &server, const std
             std::string url(cardUrls.at(i));
             ss << server << url;
 
+            if(Option::isVerbose()) {
+                std::cout << "Curling url " << ss.str() << std::endl;
+            }
+
             curl_easy_setopt(curl, CURLOPT_URL, ss.str().c_str());
             res = curl_easy_perform(curl);
 
@@ -147,7 +177,7 @@ std::vector<Person> CardCurler::getAllCards(const std::string &server, const std
             }
 
             if(Option::isVerbose()) {
-                std::cerr << "TRACE: " << "found num vcards: " << card.size() << std::endl;
+                std::cerr << "TRACE: " << "Card size: " << card.size() << " chars" << std::endl;
             }
 
             if(card.size() > 0) {
