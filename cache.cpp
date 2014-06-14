@@ -71,7 +71,15 @@ std::vector<Person> Cache::findInCache(const std::string &query) {
     if(false == openDatabase())
         return result;
 
-    prepSqlite(query);
+    prepSqlite("SELECT v.firstname, v.lastname, e.mail FROM vcards v, emails e"
+        " WHERE e.vcardid = v.vcardid"
+        " AND (lower(v.firstname) LIKE '%?%'"
+        " OR lower(v.lastname) LIKE '%?%'"
+        " OR lower(e.mail) LIKE '%?%')"
+    );
+    sqlite3_bind_text(stmt, 1, query.c_str(), query.length(), NULL);
+    sqlite3_bind_text(stmt, 2, query.c_str(), query.length(), NULL);
+    sqlite3_bind_text(stmt, 3, query.c_str(), query.length(), NULL);
 
     bool done = false;
     while(!done) {
