@@ -160,14 +160,6 @@ void Cache::addEmails(const std::vector<std::string> &emails, int rowID) {
     for(unsigned int i=0; i<emails.size(); i++) {
         std::string email = emails.at(i);
 
-        /*
-        std::stringstream ss;
-        ss << "insert into emails (vcardid, mail) values(";
-        ss << rowID;
-        ss << ", '" << email << "')";
-
-        prepSqlite(ss.str());
-        */
         prepSqlite("INSERT INTO emails (vcardid, mail) VALUES(?, ?)");
         // bind values
         sqlite3_bind_int(stmt, 1, rowID);
@@ -204,15 +196,6 @@ void Cache::addVCard(const std::string &fn, const std::string &ln, const std::ve
     }
 
     std::string dt = buildDateTimeString(updatedAt);
-    /*
-    std::stringstream ss;
-
-    // happy sql injecting ;)
-    ss << "insert into vcards (FirstName, LastName, VCard, UpdatedAt) values (";
-    ss << "'" << fn << "','" << ln << "','" << data << "','" << dt << "')";
-
-    bool b = prepSqlite(ss.str());
-    */
     bool b = prepSqlite("INSERT INTO vcards (FirstName, LastName, VCard, UpdatedAt) VALUES (?, ?, ?, ?)");
     if(b) {
         sqlite3_bind_text(stmt, 1, fn.c_str(), fn.length(), NULL);
