@@ -50,9 +50,21 @@ Settings::Settings() {
 
                 if(line.size() > 0) {
                     std::vector<std::string> tokens = StringUtils::split(line, "=");
-                    if(tokens.size() == 2) {
+                    if(tokens.size() >= 2) {
+                        std::string v;
+                        if(tokens.size() > 2) {
+                            // combine 1 to end
+                            for(int a = 1; a < tokens.size(); ++a) {
+								if(a > 1) {
+									v += "=";
+								}
+                                v += tokens.at(a);
+                            }
+                        } else {
+                            v = tokens.at(1);
+                        }
                         std::map< std::string, std::string > _map = cfg[section];
-                        _map.insert(std::pair<std::string, std::string>(tokens.at(0), tokens.at(1)));
+                        _map.insert(std::pair<std::string, std::string>(tokens.at(0), v));
                         cfg[section] = _map;
                         numSettings++;
                     }
