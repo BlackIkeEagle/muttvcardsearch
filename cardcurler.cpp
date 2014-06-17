@@ -357,17 +357,8 @@ std::string CardCurler::get(const string &requestType, const std::string& query)
 }
 
 std::vector<Person> CardCurler::curlCache(const std::string &query) {
-
-    // Happy sql injecting... ;)
-    std::stringstream ss;
-    ss << "select v.firstname, v.lastname, e.mail from vcards v, emails e ";
-    ss << "where e.vcardid = v.vcardid and (lower(v.firstname) like '%" << query << "%' ";
-    ss << "or lower(v.firstname) like '%"<< query << "%' ";
-    ss << "or lower(v.lastname) like '%"<< query << "%' ";
-    ss << "or lower(e.mail) like '%"<< query << "%')";
-
     Cache cache;
-    return cache.findInCache(ss.str());
+    return cache.findInCache(query);
 }
 
 // curl a card online

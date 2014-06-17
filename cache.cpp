@@ -71,7 +71,15 @@ std::vector<Person> Cache::findInCache(const std::string &query) {
     if(false == openDatabase())
         return result;
 
-    prepSqlite(query);
+    prepSqlite("SELECT v.firstname, v.lastname, e.mail FROM vcards v, emails e"
+        " WHERE e.vcardid = v.vcardid"
+        " AND (lower(v.firstname) LIKE '%?%'"
+        " OR lower(v.lastname) LIKE '%?%'"
+        " OR lower(e.mail) LIKE '%?%')"
+    );
+    sqlite3_bind_text(stmt, 1, query.c_str(), query.length(), NULL);
+    sqlite3_bind_text(stmt, 2, query.c_str(), query.length(), NULL);
+    sqlite3_bind_text(stmt, 3, query.c_str(), query.length(), NULL);
 
     bool done = false;
     while(!done) {
@@ -160,12 +168,10 @@ void Cache::addEmails(const std::vector<std::string> &emails, int rowID) {
     for(unsigned int i=0; i<emails.size(); i++) {
         std::string email = emails.at(i);
 
-        std::stringstream ss;
-        ss << "insert into emails (vcardid, mail) values(";
-        ss << rowID;
-        ss << ", '" << email << "')";
-
-        prepSqlite(ss.str());
+        prepSqlite("INSERT INTO emails (vcardid, mail) VALUES(?, ?)");
+        // bind values
+        sqlite3_bind_int(stmt, 1, rowID);
+        sqlite3_bind_text(stmt, 2, email.c_str(), email.length(), NULL);
         stepSqlite("Failed to add email to database");
         finalizeSqlite();
     }
@@ -198,14 +204,12 @@ void Cache::addVCard(const std::string &fn, const std::string &ln, const std::ve
     }
 
     std::string dt = buildDateTimeString(updatedAt);
-    std::stringstream ss;
-
-    // happy sql injecting ;)
-    ss << "insert into vcards (FirstName, LastName, VCard, UpdatedAt) values (";
-    ss << "'" << fn << "','" << ln << "','" << data << "','" << dt << "')";
-
-    bool b = prepSqlite(ss.str());
+    bool b = prepSqlite("INSERT INTO vcards (FirstName, LastName, VCard, UpdatedAt) VALUES (?, ?, ?, ?)");
     if(b) {
+        sqlite3_bind_text(stmt, 1, fn.c_str(), fn.length(), NULL);
+        sqlite3_bind_text(stmt, 2, ln.c_str(), ln.length(), NULL);
+        sqlite3_bind_text(stmt, 3, data.c_str(), data.length(), NULL);
+        sqlite3_bind_text(stmt, 4, dt.c_str(), dt.length(), NULL);
         b = stepSqlite("Failed to add new record to cache database");
         if(b) {
             finalizeSqlite();
