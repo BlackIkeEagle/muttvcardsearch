@@ -95,10 +95,6 @@ std::vector<Person> Cache::findInCache(const std::string &query) {
 
     bool done = false;
     while(!done) {
-        if(Option::isVerbose()) {
-            std::cout << "Inside sql loop..." << std::endl;
-        }
-
         switch ( sqlite3_step( stmt ) ) {
         case SQLITE_ROW:
             {
