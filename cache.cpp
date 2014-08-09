@@ -82,16 +82,16 @@ std::vector<Person> Cache::findInCache(const std::string &query) {
     _query += " OR lower(v.lastname) LIKE '%' || lower(?) || '%'";
     _query += " OR lower(e.mail) LIKE '%' || lower(?) || '%')";
 
-    if(Option::isVerbose()) {
-        std::cout << "SQL query: " << _query << std::endl;
-    }
-
+    
     prepSqlite(_query);
+
     sqlite3_bind_text(stmt, 1, query.c_str(), -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(stmt, 2, query.c_str(), -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(stmt, 3, query.c_str(), -1, SQLITE_TRANSIENT);
 
-    sqlite3_trace(db, &Cache::trace_cb, NULL);
+    if(Option::isVerbose()) {
+        sqlite3_trace(db, &Cache::trace_cb, NULL);
+    }
 
     bool done = false;
     while(!done) {
