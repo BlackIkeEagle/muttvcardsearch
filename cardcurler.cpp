@@ -91,9 +91,11 @@ std::vector<std::string> CardCurler::getvCardURLs(const std::string &query) {
                 }
 
                 // RADICALE has URL's ending with vcf/
-                if(StringUtils::endsWith(url, "vcf") || StringUtils::endsWith(url, "vcf/")) {
-                    result.push_back(url);
-                }
+                // disabled at 20140809
+                // if(StringUtils::endsWith(url, "vcf") || StringUtils::endsWith(url, "vcf/")) {
+                //    result.push_back(url);
+                //}
+                result.push_back(url);
             }
         }
     }
@@ -357,6 +359,10 @@ std::string CardCurler::get(const string &requestType, const std::string& query)
 }
 
 std::vector<Person> CardCurler::curlCache(const std::string &query) {
+    if(Option::isVerbose()) {
+        std::cout << "Curling cache using query '" << query << "'";
+    }
+
     Cache cache;
     return cache.findInCache(query);
 }

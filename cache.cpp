@@ -35,6 +35,11 @@ Cache::~Cache() {
     }
 }
 
+void Cache::trace_cb(void* udp, const char* sql) {
+    std::string q(sql);
+    std::cout << "SQLITE3 TRACE QUERY: " << q << std::endl;
+}
+
 bool Cache::finalizeSqlite() {
     int retVal = sqlite3_finalize(stmt);
     if(SQLITE_OK != retVal) {
@@ -71,18 +76,29 @@ std::vector<Person> Cache::findInCache(const std::string &query) {
     if(false == openDatabase())
         return result;
 
-    prepSqlite("SELECT v.firstname, v.lastname, e.mail FROM vcards v, emails e"
-        " WHERE e.vcardid = v.vcardid"
-        " AND (lower(v.firstname) LIKE '%?%'"
-        " OR lower(v.lastname) LIKE '%?%'"
-        " OR lower(e.mail) LIKE '%?%')"
-    );
-    sqlite3_bind_text(stmt, 1, query.c_str(), query.length(), NULL);
-    sqlite3_bind_text(stmt, 2, query.c_str(), query.length(), NULL);
-    sqlite3_bind_text(stmt, 3, query.c_str(), query.length(), NULL);
+    std::string _query = "SELECT v.firstname, v.lastname, e.mail FROM vcards v, emails e";
+    _query += " WHERE e.vcardid = v.vcardid";
+    _query += " AND (lower(v.firstname) LIKE '%' || lower(?) || '%'";
+    _query += " OR lower(v.lastname) LIKE '%' || lower(?) || '%'";
+    _query += " OR lower(e.mail) LIKE '%' || lower(?) || '%')";
+
+    if(Option::isVerbose()) {
+        std::cout << "SQL query: " << _query << std::endl;
+    }
+
+    prepSqlite(_query);
+    sqlite3_bind_text(stmt, 1, query.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 2, query.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 3, query.c_str(), -1, SQLITE_TRANSIENT);
+
+    sqlite3_trace(db, &Cache::trace_cb, NULL);
 
     bool done = false;
     while(!done) {
+        if(Option::isVerbose()) {
+            std::cout << "Inside sql loop..." << std::endl;
+        }
+
         switch ( sqlite3_step( stmt ) ) {
         case SQLITE_ROW:
             {
@@ -95,6 +111,10 @@ std::vector<Person> Cache::findInCache(const std::string &query) {
                 p.LastName = ln;
                 p.FirstName = fn;
                 p.Emails.push_back(email);
+
+                if(Option::isVerbose()) {
+                    std::cout << "Found person in cache: " << p.LastName << ":" << p.FirstName << ":" << email << std::endl;
+                }
 
                 result.push_back(p);
             }

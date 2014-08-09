@@ -35,12 +35,15 @@
 #include "settings.h"
 #include "person.h"
 #include "fileutils.h"
+#include "option.h"
 
 class Cache
 {
 public:
     Cache();
     ~Cache();
+
+    static void trace_cb(void* udp, const char* sql);
 
     bool openDatabase();
     bool createDatabase();

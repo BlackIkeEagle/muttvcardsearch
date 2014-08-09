@@ -176,7 +176,15 @@ int main(int argc, char *argv[])
         // 1. look into the cache
         bool cacheMiss = false;
         if(FileUtils::fileExists(cachefile)) {
+            if(Option::isVerbose()) {
+                std::cout << "Cache lookup in file " << cachefile;
+            }
+            
             people = CardCurler::curlCache(std::string(argv[1]));
+
+            if(Option::isVerbose()) {
+                std::cout << "Cache lookup returned " << people.size() << " records";
+            }
         }
 
         // nothing found in cache? => search online
