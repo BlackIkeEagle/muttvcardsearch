@@ -1,6 +1,10 @@
 muttvcardsearch
 ============
 
+PROJECT ABANDONED
+------------
+I do not use mutt or Linux for almost a year now and I have no time anymore to work on muttvcardsearch. Please feel free to fork the software. It is open source. Thanks for your feedback (and all the fish).
+
 ABOUT
 ------------
 muttvcardsearch is a small mutt carddav search utility for your Owncloud or SOGo server.
