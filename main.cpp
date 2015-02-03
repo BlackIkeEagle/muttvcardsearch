@@ -73,13 +73,20 @@ int main(int argc, char *argv[])
 {
     Settings cfg;
     Option opt(argc, argv, &cfg);
+    std::string search = "";
 
     if(opt.doConfig()) {
         opt.configure();
         return 0;
-    } else if ( argc != 2) {
+    } else if (argc < 2) {
         printError("invalid or missing arguments");
         return 1;
+    } else {
+        // combine all the args in a space separated string.
+        for(int i=1; i<argc; i++) {
+            if(search != "") search += " ";
+            search += argv[i];
+        }
     }
 
     if(false == cfg.isValid()) {
@@ -180,7 +187,7 @@ int main(int argc, char *argv[])
                 std::cout << "Cache lookup in file " << cachefile;
             }
             
-            people = CardCurler::curlCache(std::string(argv[1]));
+            people = CardCurler::curlCache(search);
 
             if(Option::isVerbose()) {
                 std::cout << "Cache lookup returned " << people.size() << " records";
@@ -190,7 +197,7 @@ int main(int argc, char *argv[])
         // nothing found in cache? => search online
         if(people.size() == 0) {
            cacheMiss = true;
-           StringUtils::replace(&query, "%s", std::string(argv[1]));
+           StringUtils::replace(&query, "%s", search);
 
            // isn't it a nice duplication? - so get rid of it, stupid!
            for(std::vector<std::string>::const_iterator it = sections.begin(); it != sections.end(); ++it) {
