@@ -42,8 +42,10 @@ void printError(const std::string &detail) {
 
     cout << ":::::::: ABOUT ::::" << endl;
     cout << APPNAME << " is a small adressbook utility for the mutt mailclient to read your contacts" << endl;
-    cout << "from an owncloud or SOGo carddav list. (C) Torsten Flammiger, 2013, Licensed under GPLv2." << endl;
-    cout << "See https://github.com/tfl/" << APPNAME << " for updates and source." << endl << endl;
+    cout << "from an owncloud or SOGo carddav list. Licensed under GPLv2." << endl;
+    cout << "(C) Torsten Flammiger, 2013" << endl;
+    cout << "(C) Ike Devolder, 2015" << endl;
+    cout << "See https://github.com/BlackIkeEagle/" << APPNAME << " for updates and source." << endl << endl;
 
     cout << ":::: CONFIGURE ::::" << endl;
     cout << "$ " << APPNAME << "  --name=GIVE-IT-A-NAME \\" << endl;
