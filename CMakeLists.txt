@@ -28,5 +28,5 @@ include_directories(${SQLITE3_INCLUDE_DIR})
 # Link the executable
 target_link_libraries(muttvcardsearch ${CURL_LIBRARY} ${SQLITE3_LIBRARIES})
 
-install (TARGETS muttvcardsearch DESTINATION "/usr/bin")
-
+install (TARGETS muttvcardsearch DESTINATION "bin/")
+install (FILES manual/muttvcardsearch.man DESTINATION "share/man/man8/" RENAME muttvcardsearch.8)
