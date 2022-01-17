@@ -1,6 +1,12 @@
 muttvcardsearch
 ============
 
+ARCHIVED
+------------
+
+It has been a long time since I have used muttvcardsearch. So I'm going to archive it for now.
+I'll archive in a way that you don't need to revert this commit by making the archived branch the default.
+
 ABOUT
 ------------
 muttvcardsearch is a small mutt carddav search utility for your Owncloud or SOGo server.
